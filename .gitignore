@@ -1,0 +1,31 @@
+# Secrets
+.env
+credentials.json
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Node / Mini App
+node_modules/
+mini-app/dist/
+mini-app/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
