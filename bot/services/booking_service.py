@@ -47,9 +47,13 @@ async def get_available_room(room_type: str, check_in: date, check_out: date) ->
             "p_check_out": check_out.isoformat(),
         },
     ).execute()
-    if result.data:
-        return result.data[0]
-    return None
+    data = result.data
+    if not data:
+        return None
+    # Supabase returns a single-row RPC result as a dict, not a list
+    if isinstance(data, list):
+        return data[0] if data else None
+    return data
 
 
 async def create_booking(
