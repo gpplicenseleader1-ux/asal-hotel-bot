@@ -245,6 +245,7 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
             guests_count=data["guests"],
             payment_method=data["payment_method"],
         )
+        await booking_service.update_room_status(room["id"], "occupied")
     except Exception as e:
         logger.error(f"Booking creation failed: {e}", exc_info=True)
         await callback.message.edit_text(t("error_generic", lang), parse_mode="HTML")

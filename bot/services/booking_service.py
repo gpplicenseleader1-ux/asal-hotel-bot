@@ -79,11 +79,16 @@ async def create_booking(
         "guest_phone": guest_phone,
         "payment_method": payment_method,
         "payment_status": "pending",
-        "status": "pending",
+        "status": "confirmed",
         "source": source,
     }
     result = db.table("bookings").insert(booking).execute()
     return result.data[0]
+
+
+async def update_room_status(room_id: str, status: str) -> None:
+    db = get_service_client()
+    db.table("rooms").update({"status": status}).eq("id", room_id).execute()
 
 
 async def update_booking_status(booking_id: str, status: str) -> dict[str, Any] | None:
