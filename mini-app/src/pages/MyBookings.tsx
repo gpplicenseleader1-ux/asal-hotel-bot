@@ -1,99 +1,137 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import type { Booking, Language } from '../types'
+import type { UserBooking, BookingStatus } from '../types'
 import type { Translations } from '../i18n'
 import { useBooking } from '../hooks/useBooking'
 import { useTelegram } from '../hooks/useTelegram'
 
 interface Props {
-  lang: Language
-  t: Translations
+  t:      Translations
+  onBack: () => void
 }
 
-const STATUS_EMOJI: Record<string, string> = {
-  pending: '⏳',
-  confirmed: '✅',
-  cancelled: '❌',
-  completed: '🏁',
+interface StatusStyle {
+  icon:  string
+  color: string
+  bg:    string
 }
 
-export function MyBookings({ lang: _lang, t }: Props) {
-  const navigate = useNavigate()
-  const { user } = useTelegram()
-  const { getUserBookings, getOrCreateUser, loading } = useBooking()
-  const [bookings, setBookings] = useState<Booking[]>([])
+const STATUS_STYLE: Record<BookingStatus, StatusStyle> = {
+  pending:   { icon: '⏳', color: 'text-amber-700',   bg: 'bg-amber-50'    },
+  confirmed: { icon: '✅', color: 'text-green-700',   bg: 'bg-green-50'    },
+  cancelled: { icon: '❌', color: 'text-red-600',     bg: 'bg-red-50'      },
+  completed: { icon: '🏁', color: 'text-brown-mid',   bg: 'bg-beige-dark'  },
+}
+
+const fmtDate = (d: string) => {
+  const [y, m, day] = d.split('-')
+  return `${day}.${m}.${String(y).slice(2)}`
+}
+
+export function MyBookings({ t, onBack }: Props) {
+  const { tg, user }               = useTelegram()
+  const { getUserBookings, loading } = useBooking()
+  const [bookings, setBookings]    = useState<UserBooking[]>([])
+
+  // Telegram BackButton
+  useEffect(() => {
+    if (!tg?.BackButton) return
+    tg.BackButton.show()
+    tg.BackButton.onClick(onBack)
+    return () => { tg.BackButton.offClick(onBack); tg.BackButton.hide() }
+  }, [tg, onBack])
 
   useEffect(() => {
     if (!user) return
-    getOrCreateUser(user.id, `${user.first_name} ${user.last_name ?? ''}`.trim(), user.username)
-      .then((u) => getUserBookings(u.id))
-      .then(setBookings)
-  }, [user, getUserBookings, getOrCreateUser])
+    getUserBookings(user.id).then(setBookings)
+  }, [user, getUserBookings])
 
-  const statusLabel: Record<string, string> = {
-    pending: t.pending,
+  const roomLabel: Record<string, string> = {
+    standard:     t.standard,
+    junior_suite: t.juniorSuite,
+    suite:        t.suite,
+  }
+
+  const statusLabel: Record<BookingStatus, string> = {
+    pending:   t.pending,
     confirmed: t.confirmed,
     cancelled: t.cancelled,
     completed: t.completed,
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm sticky top-0 z-10 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate('/')} className="text-gray-500 text-xl">←</button>
-        <h1 className="font-semibold text-gray-900">📋 {t.myBookings}</h1>
+    <div className="min-h-screen bg-beige">
+      {/* Header */}
+      <div className="bg-brown px-5 py-4 flex items-center gap-4">
+        <button onClick={onBack} className="text-gold-pale text-2xl font-light leading-none">←</button>
+        <p className="font-serif text-white text-lg font-semibold">📋 {t.myBookings}</p>
       </div>
 
-      <div className="p-4 space-y-3">
-        {loading ? (
-          <div className="text-center py-8 text-gray-400">{t.loading}</div>
-        ) : bookings.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-3">📭</div>
-            <p className="text-gray-500">{t.noBookings}</p>
-            <button
-              onClick={() => navigate('/')}
-              className="mt-4 px-6 py-2 bg-brand-500 text-white rounded-xl font-medium"
-            >
+      {/* Divider */}
+      <div className="flex items-center gap-3 px-6 py-4">
+        <div className="flex-1 h-px bg-beige-dark" />
+        <span className="text-gold text-sm">✦</span>
+        <div className="flex-1 h-px bg-beige-dark" />
+      </div>
+
+      <div className="px-4 pb-8 space-y-3">
+        {loading && (
+          <div className="text-center py-16">
+            <p className="text-gold text-3xl animate-pulse">✦</p>
+            <p className="text-brown-mid mt-3 text-sm">{t.loading}</p>
+          </div>
+        )}
+
+        {!loading && bookings.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-5xl mb-4">🏨</p>
+            <p className="font-serif text-brown text-xl mb-1">Asal Hotel</p>
+            <p className="text-brown-mid text-sm mb-6">{t.noBookings}</p>
+            <button onClick={onBack} className="btn-gold px-8">
               {t.bookNow}
             </button>
           </div>
-        ) : (
-          bookings.map((b) => {
-            const nights = Math.round(
-              (new Date(b.check_out_date).getTime() - new Date(b.check_in_date).getTime()) / 86400000,
-            )
-            return (
-              <div key={b.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                <div className="flex justify-between items-start mb-2">
+        )}
+
+        {!loading && bookings.map((b) => {
+          const style = STATUS_STYLE[b.status] ?? STATUS_STYLE.pending
+          return (
+            <div key={b.id} className="card-hotel">
+              {/* Status bar */}
+              <div className={`${style.bg} px-4 py-2 flex items-center justify-between border-b border-beige-dark`}>
+                <span className={`text-xs font-semibold uppercase tracking-wide ${style.color}`}>
+                  {style.icon} {statusLabel[b.status]}
+                </span>
+                <span className="text-xs font-mono text-brown-light">
+                  #{b.id.slice(0, 8).toUpperCase()}
+                </span>
+              </div>
+
+              {/* Body */}
+              <div className="px-4 py-3 space-y-2">
+                <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-xs font-mono text-gray-400 uppercase">#{b.id.slice(0, 8)}</span>
-                    <div className="font-semibold text-gray-900">
-                      {b.room_type === 'standard' ? t.standard : b.room_type === 'deluxe' ? t.deluxe : t.suite}
-                      {b.rooms?.room_number && <span className="text-gray-500 font-normal ml-1">№{b.rooms.room_number}</span>}
-                    </div>
+                    <p className="font-serif text-brown font-semibold">
+                      {roomLabel[b.room_type] ?? b.room_type}
+                      <span className="font-sans font-normal text-brown-mid text-sm ml-1.5">
+                        №{b.room_number}
+                      </span>
+                    </p>
+                    <p className="text-xs text-brown-mid mt-0.5">
+                      {fmtDate(b.check_in)} → {fmtDate(b.check_out)} · {b.nights} {t.nights}
+                    </p>
                   </div>
-                  <span className={`text-sm font-medium px-2 py-0.5 rounded-full ${
-                    b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                    b.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                    b.status === 'completed' ? 'bg-gray-100 text-gray-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {STATUS_EMOJI[b.status]} {statusLabel[b.status]}
-                  </span>
+                  <span className="font-serif text-xl font-bold text-gold">${b.total_price}</span>
                 </div>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <div>📅 {b.check_in_date} → {b.check_out_date} ({nights} {t.nights})</div>
-                  <div>👥 {b.guests_count} {t.guests} · 💳 {b.payment_method}</div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between">
-                  <span className="text-gray-500 text-sm">👤 {b.guest_name}</span>
-                  <span className="font-bold text-brand-600">${b.total_price}</span>
+
+                <div className="text-xs text-brown-light border-t border-beige pt-2 flex items-center gap-2">
+                  <span>👤 {b.guest_name}</span>
+                  <span>·</span>
+                  <span>💳 {b.payment_method}</span>
                 </div>
               </div>
-            )
-          })
-        )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

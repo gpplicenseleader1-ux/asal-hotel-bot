@@ -351,10 +351,10 @@ create policy "bookings: service full access"
     using (auth.role() = 'service_role');
 
 -- ============================================================
--- SEED: 80 rooms
---   40 standard    101–140  floor 1  $60/night  max 2 guests
---   20 junior_suite 201–220 floor 2  $100/night max 3 guests
---   20 suite        301–320 floor 3  $160/night max 4 guests
+-- SEED: 25 rooms (реальный состав Asal Hotel)
+--   10 standard     101–110  floor 1  $60/night  max 2 guests
+--   10 junior_suite 201–210  floor 2  $100/night max 3 guests
+--    5 suite         301–305  floor 3  $160/night max 4 guests
 -- ============================================================
 
 insert into rooms
@@ -378,7 +378,7 @@ select
         {"icon":"shower",    "name_ru":"Душ",             "name_uz":"Dush",            "name_en":"Shower"},
         {"icon":"breakfast", "name_ru":"Завтрак включён", "name_uz":"Nonushta kiradi", "name_en":"Breakfast included"}
     ]'::jsonb
-from generate_series(1, 40) as n;
+from generate_series(1, 10) as n;
 
 insert into rooms
     (room_number, type, floor, status, price_per_night, max_guests,
@@ -403,7 +403,7 @@ select
         {"icon":"bathrobe",  "name_ru":"Халаты и тапочки", "name_uz":"Xalat va kovush", "name_en":"Robes & slippers"},
         {"icon":"breakfast", "name_ru":"Завтрак включён",  "name_uz":"Nonushta kiradi", "name_en":"Breakfast included"}
     ]'::jsonb
-from generate_series(1, 20) as n;
+from generate_series(1, 10) as n;
 
 insert into rooms
     (room_number, type, floor, status, price_per_night, max_guests,
@@ -431,7 +431,7 @@ select
         {"icon":"breakfast", "name_ru":"Завтрак включён",        "name_uz":"Nonushta kiradi",     "name_en":"Breakfast included"},
         {"icon":"transfer",  "name_ru":"Трансфер из аэропорта",  "name_uz":"Aeroport transferi",  "name_en":"Airport transfer"}
     ]'::jsonb
-from generate_series(1, 20) as n;
+from generate_series(1, 5) as n;
 
 -- Verify: select type, count(*), min(room_number), max(room_number) from rooms group by type order by min(price_per_night);
--- Expected: standard 40 | junior_suite 20 | suite 20 => total 80
+-- Expected: standard 10 (101-110) | junior_suite 10 (201-210) | suite 5 (301-305) => total 25
