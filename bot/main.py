@@ -30,6 +30,11 @@ async def main() -> None:
     dp.include_router(ai_assistant.router)
 
     await bot.delete_webhook(drop_pending_updates=True)
+    logger.info("Webhook deleted, pending updates dropped")
+
+    bot_info = await bot.get_me()
+    logger.info("Bot started: @%s (id=%d)", bot_info.username, bot_info.id)
+
     logger.info("Starting polling...")
     await dp.start_polling(bot)
 
