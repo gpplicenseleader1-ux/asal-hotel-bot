@@ -152,7 +152,8 @@ async def enter_name(message: Message, state: FSMContext, lang: str = "ru") -> N
 
 @router.message(BookingFSM.enter_phone, F.contact)
 async def enter_phone_contact(message: Message, state: FSMContext, lang: str = "ru") -> None:
-    phone = message.contact.phone_number
+    from utils.helpers import phone_normalize
+    phone = phone_normalize(message.contact.phone_number)
     await _proceed_to_payment(message, state, lang, phone)
 
 
@@ -164,13 +165,19 @@ async def enter_phone_text(message: Message, state: FSMContext, lang: str = "ru"
 
 
 async def _proceed_to_payment(message: Message, state: FSMContext, lang: str, phone: str) -> None:
-    await state.update_data(guest_phone=phone)
-    await state.set_state(BookingFSM.select_payment)
-    await message.answer(
-        t("book_select_payment", lang),
-        reply_markup=payment_keyboard(lang),
-        parse_mode="HTML",
-    )
+    try:
+        await state.update_data(guest_phone=phone)
+        await state.set_state(BookingFSM.select_payment)
+        # Dismiss the phone-share ReplyKeyboard, then add the inline payment buttons
+        payment_msg = await message.answer(
+            t("book_select_payment", lang),
+            reply_markup=ReplyKeyboardRemove(),
+            parse_mode="HTML",
+        )
+        await payment_msg.edit_reply_markup(reply_markup=payment_keyboard(lang))
+    except Exception as e:
+        logger.error(f"Payment transition failed: {e}", exc_info=True)
+        await message.answer(t("error_generic", lang), reply_markup=ReplyKeyboardRemove())
 
 
 @router.callback_query(BookingFSM.select_payment, F.data.startswith("pay:"))
