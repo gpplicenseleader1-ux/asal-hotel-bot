@@ -84,7 +84,7 @@ async def admin_stats(callback: CallbackQuery) -> None:
         f"📊 <b>Статистика за {today.strftime('%B %Y')}</b>\n\n"
         f"📋 Всего броней: {stats.get('total_bookings', 0)}\n"
         f"💰 Доход: ${stats.get('total_revenue', 0):.0f}\n"
-        f"🏨 Заполняемость: {stats.get('occupancy_rate', 0):.1f}%"
+        f"🏨 Заполняемость: {stats.get('occupancy_pct', 0):.1f}%"
     )
     await callback.message.edit_text(text, reply_markup=back_to_admin_keyboard(), parse_mode="HTML")
     await callback.answer()
@@ -168,9 +168,9 @@ def _format_bookings_list(bookings: list, title: str) -> str:
         room_info = b.get("rooms", {}) or {}
         room_num = room_info.get("room_number", "?")
         lines.append(
-            f"\n📋 <code>{get_booking_id(b['id'])}</code> | №{room_num} {b['room_type']}\n"
+            f"\n📋 <code>{get_booking_id(b['id'])}</code> | №{room_num} {room_info.get('type', '?')}\n"
             f"👤 {b['guest_name']} | {b['guest_phone']}\n"
-            f"📅 {b['check_in_date']} → {b['check_out_date']}\n"
+            f"📅 {b['check_in']} → {b['check_out']}\n"
             f"💰 ${b['total_price']} | {b['payment_method']} | {b['status']}"
         )
     return "\n".join(lines)

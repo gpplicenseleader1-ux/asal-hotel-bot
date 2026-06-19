@@ -10,6 +10,7 @@ from keyboards.booking import (
     room_type_keyboard, calendar_keyboard, guests_keyboard,
     phone_keyboard, payment_keyboard, confirm_keyboard,
 )
+from keyboards.admin import booking_action_keyboard
 from keyboards.main_menu import main_menu_keyboard
 from middlewares.i18n import t
 from services import booking_service, sheets_service, calendar_service
@@ -292,7 +293,11 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
         )
         for admin_id in config.ADMIN_IDS:
             try:
-                await callback.bot.send_message(admin_id, admin_text, parse_mode="HTML")
+                await callback.bot.send_message(
+                    admin_id, admin_text,
+                    parse_mode="HTML",
+                    reply_markup=booking_action_keyboard(booking["id"]),
+                )
             except Exception:
                 pass
     except Exception as e:

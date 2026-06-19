@@ -148,7 +148,7 @@ async def get_monthly_stats(year: int, month: int) -> dict[str, Any]:
     result = db.rpc("monthly_stats", {"p_year": year, "p_month": month}).execute()
     if result.data:
         return result.data[0]
-    return {"total_bookings": 0, "total_revenue": 0, "occupancy_rate": 0}
+    return {"total_bookings": 0, "total_revenue": 0, "occupancy_pct": 0}
 
 
 async def update_loyalty_after_booking(telegram_id: int, nights: int) -> None:

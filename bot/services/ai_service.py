@@ -97,12 +97,12 @@ async def ask_ai(
     conversation_history: list[dict],
     lang: str = "ru",
 ) -> str:
-    client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+    client = anthropic.AsyncAnthropic(api_key=config.ANTHROPIC_API_KEY)
 
     messages = conversation_history + [{"role": "user", "content": user_message}]
 
     try:
-        response = client.messages.create(
+        response = await client.messages.create(
             model=config.ANTHROPIC_MODEL,
             max_tokens=1024,
             system=HOTEL_SYSTEM_PROMPT,
@@ -124,7 +124,7 @@ async def ask_ai(
             messages.append({"role": "assistant", "content": response.content})
             messages.append({"role": "user", "content": tool_results})
 
-            followup = client.messages.create(
+            followup = await client.messages.create(
                 model=config.ANTHROPIC_MODEL,
                 max_tokens=1024,
                 system=HOTEL_SYSTEM_PROMPT,
