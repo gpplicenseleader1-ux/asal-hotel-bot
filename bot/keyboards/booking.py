@@ -6,13 +6,17 @@ import config
 from utils.helpers import calendar_weeks, prev_month, next_month, MONTH_NAMES
 
 
+_NIGHT_WORD = {"ru": "ночь", "uz": "tun", "en": "night"}
+
+
 def room_type_keyboard(lang: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
+    night = _NIGHT_WORD.get(lang, _NIGHT_WORD["ru"])
     for rt, info in config.ROOM_TYPES.items():
         name = info[lang]["name"]
         price = info["price"]
         emoji = info["emoji"]
-        builder.button(text=f"{emoji} {name} — ${price}/ночь", callback_data=f"rt:{rt}")
+        builder.button(text=f"{emoji} {name} — ${price}/{night}", callback_data=f"rt:{rt}")
     builder.button(text={"ru": "❌ Отмена", "uz": "❌ Bekor", "en": "❌ Cancel"}.get(lang, "❌ Cancel"), callback_data="book:cancel")
     builder.adjust(1)
     return builder.as_markup()

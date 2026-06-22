@@ -42,8 +42,8 @@ def set_user_lang(user_id: int, lang: str) -> None:
     _user_langs[user_id] = lang
 
 
-def get_user_lang(user_id: int) -> str:
-    return _user_langs.get(user_id, "ru")
+def get_user_lang(user_id: int) -> str | None:
+    return _user_langs.get(user_id)
 
 
 class I18nMiddleware(BaseMiddleware):
@@ -56,9 +56,11 @@ class I18nMiddleware(BaseMiddleware):
         user: User | None = data.get("event_from_user")
         lang = "ru"
         if user:
-            lang = get_user_lang(user.id)
-            if not lang and user.language_code:
-                lang = user.language_code if user.language_code in ("ru", "uz", "en") else "ru"
+            stored = get_user_lang(user.id)
+            if stored:
+                lang = stored
+            elif user.language_code and user.language_code in ("ru", "uz", "en"):
+                lang = user.language_code
         data["lang"] = lang
         data["t"] = get_translator(lang)
         return await handler(event, data)

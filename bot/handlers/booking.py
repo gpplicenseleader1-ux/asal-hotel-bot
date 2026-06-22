@@ -259,7 +259,10 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
         await callback.message.edit_text(t("error_generic", lang), parse_mode="HTML")
         return
 
-    await booking_service.update_loyalty_after_booking(callback.from_user.id, data["nights"])
+    try:
+        await booking_service.update_loyalty_after_booking(callback.from_user.id, data["nights"])
+    except Exception as e:
+        logger.warning(f"Loyalty update error (non-critical): {e}")
 
     try:
         await sheets_service.append_booking(booking, room.get("room_number", "?"))

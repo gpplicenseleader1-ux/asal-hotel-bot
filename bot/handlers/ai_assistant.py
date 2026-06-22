@@ -27,6 +27,7 @@ async def ai_start(callback: CallbackQuery, state: FSMContext, lang: str = "ru")
     await state.update_data(history=[], lang=lang)
     await callback.message.edit_text(
         t("ai_welcome", lang),
+        reply_markup=back_to_menu_keyboard(lang),
         parse_mode="HTML",
     )
     await callback.answer()
@@ -53,7 +54,7 @@ async def ai_chat(message: Message, state: FSMContext, lang: str = "ru") -> None
         await state.update_data(history=history)
 
         await thinking_msg.delete()
-        await message.answer(reply, parse_mode="HTML")
+        await message.answer(reply)
     except Exception as e:
         logger.error(f"AI chat error: {e}")
         await thinking_msg.delete()

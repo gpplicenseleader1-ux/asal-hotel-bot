@@ -44,8 +44,8 @@ async def create_booking_event(booking: dict[str, Any], room_number: str) -> str
                 f"Сумма: ${booking.get('total_price', 0)}\n"
                 f"Источник: {booking.get('source', 'telegram')}"
             ),
-            "start": {"date": booking["check_in_date"]},
-            "end": {"date": booking["check_out_date"]},
+            "start": {"date": booking["check_in"]},
+            "end": {"date": booking["check_out"]},
             "colorId": ROOM_TYPE_COLORS.get(room_type, "1"),
         }
         result = service.events().insert(calendarId=config.GOOGLE_CALENDAR_ID, body=event).execute()
