@@ -28,9 +28,9 @@ async def show_loyalty(callback: CallbackQuery, lang: str = "ru") -> None:
             full_name=callback.from_user.full_name or "",
             lang=lang,
         )
-        tier = user.get("loyalty_status", "base")
-        nights = user.get("nights_count", 0)
-        discount = user.get("discount_percent", 0)
+        tier = user.get("loyalty_status") or "base"
+        nights = user.get("nights_count") or 0
+        discount = user.get("discount_percent") or 0
         tier_name = f"{TIER_EMOJI.get(tier, '')} {TIER_NAMES.get(tier, {}).get(lang, tier)}"
 
         await callback.message.edit_text(

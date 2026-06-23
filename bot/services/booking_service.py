@@ -16,10 +16,7 @@ async def get_or_create_user(
     lang: str = "ru",
 ) -> dict[str, Any]:
     db = get_service_client()
-    result = db.table("users").select("*").eq("telegram_id", telegram_id).execute()
-    if result.data:
-        return result.data[0]
-    new_user = {
+    default_user: dict[str, Any] = {
         "telegram_id": telegram_id,
         "username": username or "",
         "full_name": full_name,
@@ -28,8 +25,20 @@ async def get_or_create_user(
         "nights_count": 0,
         "discount_percent": 0,
     }
-    created = db.table("users").insert(new_user).execute()
-    return created.data[0]
+    try:
+        result = db.table("users").select("*").eq("telegram_id", telegram_id).execute()
+        if result.data:
+            return result.data[0]
+    except Exception as exc:
+        logger.error("get_or_create_user select failed: %s", exc, exc_info=True)
+        return default_user
+    try:
+        created = db.table("users").insert(default_user).execute()
+        if created.data:
+            return created.data[0]
+    except Exception as exc:
+        logger.error("get_or_create_user insert failed: %s", exc, exc_info=True)
+    return default_user
 
 
 async def update_user_language(telegram_id: int, lang: str) -> None:
@@ -158,7 +167,7 @@ async def update_loyalty_after_booking(telegram_id: int, nights: int) -> None:
     user = db.table("users").select("nights_count").eq("telegram_id", telegram_id).execute()
     if not user.data:
         return
-    current_nights = user.data[0]["nights_count"] + nights
+    current_nights = (user.data[0].get("nights_count") or 0) + nights
     new_tier = loyalty_tier_from_nights(current_nights)
     discount_map = {"base": 0, "silver": 5, "gold": 10}
     db.table("users").update({

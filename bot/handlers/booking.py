@@ -259,36 +259,41 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
         await callback.message.edit_text(t("error_generic", lang), parse_mode="HTML")
         return
 
+    # --- send success message first so the user always sees it ---
+    room_name = config.ROOM_TYPES[room_type][lang]["name"]
+    try:
+        await callback.message.edit_text(
+            t(
+                "booking_success", lang,
+                booking_id=get_booking_id(booking["id"]),
+                room_type=room_name,
+                room_number=room.get("room_number", "?"),
+                check_in=format_date(check_in, lang),
+                check_out=format_date(check_out, lang),
+                nights=data["nights"],
+                total=format_price(data["total"]),
+            ),
+            parse_mode="HTML",
+            reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
+        )
+    except Exception as e:
+        logger.error("Failed to send booking success message: %s", e, exc_info=True)
+
+    # --- side effects: each wrapped individually so one failure never blocks another ---
     try:
         await booking_service.update_loyalty_after_booking(callback.from_user.id, data["nights"])
     except Exception as e:
-        logger.warning(f"Loyalty update error (non-critical): {e}")
+        logger.error("Loyalty update failed for user %s: %s", callback.from_user.id, e, exc_info=True)
 
     try:
         await sheets_service.append_booking(booking, room.get("room_number", "?"))
     except Exception as e:
-        logger.warning(f"Sheets error (non-critical): {e}")
+        logger.error("Google Sheets append failed for booking %s: %s", booking.get("id"), e, exc_info=True)
 
     try:
         await calendar_service.create_booking_event(booking, room.get("room_number", "?"))
     except Exception as e:
-        logger.warning(f"Calendar error (non-critical): {e}")
-
-    room_name = config.ROOM_TYPES[room_type][lang]["name"]
-    await callback.message.edit_text(
-        t(
-            "booking_success", lang,
-            booking_id=get_booking_id(booking["id"]),
-            room_type=room_name,
-            room_number=room.get("room_number", "?"),
-            check_in=format_date(check_in, lang),
-            check_out=format_date(check_out, lang),
-            nights=data["nights"],
-            total=format_price(data["total"]),
-        ),
-        parse_mode="HTML",
-        reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
-    )
+        logger.error("Google Calendar event creation failed for booking %s: %s", booking.get("id"), e, exc_info=True)
 
     try:
         admin_text = (
@@ -308,10 +313,10 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
                     parse_mode="HTML",
                     reply_markup=booking_action_keyboard(booking["id"]),
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("Admin notification failed for admin %s: %s", admin_id, e, exc_info=True)
     except Exception as e:
-        logger.warning(f"Admin notify error: {e}")
+        logger.error("Admin notification block failed: %s", e, exc_info=True)
 
 
 @router.callback_query(F.data == "book:cancel")
