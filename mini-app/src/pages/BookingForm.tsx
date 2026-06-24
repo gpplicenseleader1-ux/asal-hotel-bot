@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import type { RoomType, PaymentUI, BookingSuccessData } from '../types'
 import type { Translations } from '../i18n'
 import { PAYMENT_DB_MAP } from '../types'
@@ -45,6 +46,17 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
 const todayStr = () => new Date().toISOString().split('T')[0]
 const addDays   = (n: number) => new Date(Date.now() + n * 86400000).toISOString().split('T')[0]
 
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1]
+
+const sectionVariant = {
+  initial: { opacity: 0, y: 16 },
+  animate: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, delay: i * 0.06, ease: EASE_OUT },
+  }),
+}
+
 export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
   const [checkIn,  setCheckIn]  = useState(addDays(1))
   const [checkOut, setCheckOut] = useState(addDays(2))
@@ -71,7 +83,6 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
     suite:        t.suite,
   }
 
-  // ── Validation & submit ──
   const submitRef = useRef<() => void>(() => undefined)
 
   const handleSubmit = async () => {
@@ -119,10 +130,8 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
     }
   }
 
-  // Always keep ref updated so MainButton handler is fresh
   useEffect(() => { submitRef.current = handleSubmit })
 
-  // ── Telegram BackButton ──
   useEffect(() => {
     if (!tg?.BackButton) return
     tg.BackButton.show()
@@ -130,7 +139,6 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
     return () => { tg.BackButton.offClick(onBack); tg.BackButton.hide() }
   }, [tg, onBack])
 
-  // ── Telegram MainButton (wired once) ──
   useEffect(() => {
     if (!tg?.MainButton) return
     const btn = tg.MainButton
@@ -143,23 +151,36 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
   }, [tg])
 
   return (
-    <div className="min-h-screen bg-beige pb-32">
+    <div className="min-h-screen bg-offwhite pb-32">
       {/* Header */}
-      <div className="bg-brown px-5 py-4 flex items-center gap-4">
-        <button onClick={onBack} className="text-gold-pale text-2xl font-light leading-none">←</button>
+      <div
+        className="px-5 py-5 flex items-center gap-4"
+        style={{ background: 'linear-gradient(135deg, #8A4B33 0%, #C56B4A 100%)' }}
+      >
+        <motion.button
+          onClick={onBack}
+          className="text-white/80 text-2xl font-light leading-none"
+          whileTap={{ scale: 0.9 }}
+        >
+          ←
+        </motion.button>
         <div>
-          <p className="font-serif text-white text-lg font-semibold leading-tight">{roomLabel[roomType]}</p>
-          <p className="text-gold-light text-sm">${price}{t.perNight}</p>
+          <p className="font-serif text-white text-xl font-semibold leading-tight">{roomLabel[roomType]}</p>
+          <p className="text-white/70 text-sm">${price}{t.perNight}</p>
         </div>
       </div>
 
       <div className="px-4 py-5 space-y-4">
+
         {/* ── Dates ── */}
-        <div className="card-hotel p-4">
-          <h3 className="text-brown font-semibold text-xs uppercase tracking-widest mb-3">{t.selectDates}</h3>
+        <motion.div
+          className="card-premium p-4"
+          custom={0} variants={sectionVariant} initial="initial" animate="animate"
+        >
+          <h3 className="label-caps text-terra mb-3">{t.selectDates}</h3>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-brown-mid mb-1 block">{t.checkIn}</label>
+              <label className="text-xs text-charcoal-mid mb-1.5 block">{t.checkIn}</label>
               <input
                 type="date"
                 value={checkIn}
@@ -172,7 +193,7 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
               />
             </div>
             <div>
-              <label className="text-xs text-brown-mid mb-1 block">{t.checkOut}</label>
+              <label className="text-xs text-charcoal-mid mb-1.5 block">{t.checkOut}</label>
               <input
                 type="date"
                 value={checkOut}
@@ -184,18 +205,25 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
           </div>
           {errors.dates && <p className="text-red-500 text-xs mt-1.5">{errors.dates}</p>}
           {nights > 0 && (
-            <div className="mt-3 bg-gold-faint rounded-xl px-4 py-2.5 flex items-center justify-between">
-              <span className="text-brown-mid text-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mt-3 bg-terra-faint rounded-2xl px-4 py-3 flex items-center justify-between"
+            >
+              <span className="text-charcoal-mid text-sm">
                 {nights} {nights === 1 ? t.night : t.nights}
               </span>
-              <span className="font-serif text-2xl font-bold text-gold">${total}</span>
-            </div>
+              <span className="font-serif text-2xl font-bold text-terra">${total}</span>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* ── Guest info ── */}
-        <div className="card-hotel p-4 space-y-4">
-          <h3 className="text-brown font-semibold text-xs uppercase tracking-widest">{t.guestName}</h3>
+        <motion.div
+          className="card-premium p-4 space-y-4"
+          custom={1} variants={sectionVariant} initial="initial" animate="animate"
+        >
+          <h3 className="label-caps text-terra">{t.guestName}</h3>
           <div>
             <input
               type="text"
@@ -207,7 +235,7 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
           <div>
-            <label className="text-xs text-brown-mid mb-1.5 block">{t.guestPhone}</label>
+            <label className="text-xs text-charcoal-mid mb-1.5 block">{t.guestPhone}</label>
             <input
               type="tel"
               value={phone}
@@ -217,58 +245,68 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
             />
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Guests count ── */}
-        <div className="card-hotel p-4">
-          <h3 className="text-brown font-semibold text-xs uppercase tracking-widest mb-3">{t.guests}</h3>
+        <motion.div
+          className="card-premium p-4"
+          custom={2} variants={sectionVariant} initial="initial" animate="animate"
+        >
+          <h3 className="label-caps text-terra mb-3">{t.guests}</h3>
           <div className="flex gap-2">
             {Array.from({ length: maxG }, (_, i) => i + 1).map((n) => (
-              <button
+              <motion.button
                 key={n}
                 onClick={() => setGuests(n)}
-                className={`flex-1 py-3 rounded-xl border-2 font-bold text-lg transition-all duration-150 ${
+                whileTap={{ scale: 0.92 }}
+                className={`flex-1 py-3 rounded-2xl border-2 font-bold text-lg transition-all duration-150 ${
                   guests === n
-                    ? 'border-gold bg-gold text-white shadow-gold'
-                    : 'border-beige-dark bg-white text-brown'
+                    ? 'border-terra bg-terra text-white shadow-terra'
+                    : 'border-sand bg-white text-charcoal'
                 }`}
               >
                 {n}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* ── Payment methods (3×3 grid) ── */}
-        <div className="card-hotel p-4">
-          <h3 className="text-brown font-semibold text-xs uppercase tracking-widest mb-3">{t.paymentMethod}</h3>
+        {/* ── Payment ── */}
+        <motion.div
+          className="card-premium p-4"
+          custom={3} variants={sectionVariant} initial="initial" animate="animate"
+        >
+          <h3 className="label-caps text-terra mb-3">{t.paymentMethod}</h3>
           <div className="grid grid-cols-3 gap-2">
             {PAYMENT_OPTIONS.map(({ id, label, icon }) => (
-              <button
+              <motion.button
                 key={id}
                 onClick={() => setPayment(id)}
-                className={`flex flex-col items-center justify-center py-3 px-2 rounded-xl border-2 transition-all duration-150 ${
+                whileTap={{ scale: 0.93 }}
+                className={`flex flex-col items-center justify-center py-3 px-2 rounded-2xl border-2 transition-all duration-150 ${
                   payment === id
-                    ? 'border-gold bg-gold-faint text-brown shadow-sm'
-                    : 'border-beige-dark bg-white text-brown-mid'
+                    ? 'border-terra bg-terra-faint text-charcoal shadow-sm'
+                    : 'border-sand bg-white text-charcoal-mid'
                 }`}
               >
                 <span className="text-xl mb-1 leading-none">{icon}</span>
                 <span className="text-xs font-medium leading-tight text-center">{label}</span>
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Fallback submit button for non-Telegram (browser dev) */}
+        {/* Fallback submit (non-Telegram browser) */}
         {!tg && (
-          <button
+          <motion.button
             onClick={() => void handleSubmit()}
             disabled={loading}
-            className="btn-gold w-full py-4 text-base"
+            className="btn-terra w-full py-4 text-base flex items-center justify-center"
+            whileTap={{ scale: 0.96 }}
+            custom={4} variants={sectionVariant} initial="initial" animate="animate"
           >
             {loading ? t.loading : t.confirmBooking}
-          </button>
+          </motion.button>
         )}
       </div>
     </div>

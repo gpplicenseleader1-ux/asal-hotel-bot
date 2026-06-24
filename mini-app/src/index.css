@@ -5,9 +5,10 @@
 @layer base {
   html, body, #root {
     min-height: 100%;
-    background-color: #F5F0E8;
+    background-color: #FAF6F0;
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    color: #2B2420;
     overscroll-behavior: none;
   }
 
@@ -22,24 +23,54 @@
 }
 
 @layer components {
-  .btn-gold {
-    @apply bg-gold text-white font-semibold px-6 py-3 rounded-xl
-           active:scale-95 transition-transform duration-150
-           disabled:opacity-50 disabled:cursor-not-allowed;
+  /* Primary button — terracotta */
+  .btn-terra {
+    @apply bg-terra text-white font-semibold px-6 py-3.5 rounded-2xl
+           shadow-terra transition-all duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed
+           active:scale-[0.96] active:shadow-none;
   }
 
+  /* Outline button */
   .btn-outline {
-    @apply border-2 border-gold text-gold font-semibold px-6 py-3 rounded-xl
-           active:scale-95 transition-transform duration-150;
+    @apply border-2 border-terra text-terra font-semibold px-6 py-3.5 rounded-2xl
+           transition-all duration-150 active:scale-[0.96];
   }
 
+  /* Hotel input */
   .input-hotel {
-    @apply w-full bg-white border-2 border-beige-dark rounded-xl px-4 py-3
-           text-brown font-sans text-base
-           focus:outline-none focus:border-gold transition-colors duration-150;
+    @apply w-full bg-white border-2 border-sand rounded-2xl px-4 py-3.5
+           text-charcoal font-sans text-base
+           focus:outline-none focus:border-terra transition-colors duration-200;
   }
 
-  .card-hotel {
-    @apply bg-white rounded-2xl shadow-card border border-beige-dark overflow-hidden;
+  /* Premium card */
+  .card-premium {
+    @apply bg-white rounded-3xl shadow-card border border-sand overflow-hidden;
+  }
+
+  /* Section heading */
+  .heading-serif {
+    @apply font-serif font-semibold tracking-wide;
+  }
+
+  /* Micro-label */
+  .label-caps {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-charcoal-light;
+  }
+
+  /* Tag chip */
+  .chip {
+    @apply text-xs bg-terra-faint text-terra-deep px-3 py-1 rounded-full
+           border border-terra/20 font-medium;
+  }
+}
+
+/* prefers-reduced-motion: turn off framer-motion transitions globally */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
