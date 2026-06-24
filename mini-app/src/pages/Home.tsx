@@ -1,6 +1,20 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { Language, RoomType } from '../types'
 import type { Translations } from '../i18n'
+
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return reduced
+}
 
 interface RoomInfo {
   type:      RoomType
@@ -59,6 +73,8 @@ interface Props {
 }
 
 export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
+  const reducedMotion = usePrefersReducedMotion()
+
   const roomLabel: Record<RoomType, string> = {
     standard:     t.standard,
     junior_suite: t.juniorSuite,
@@ -73,27 +89,34 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
   return (
     <div className="min-h-screen bg-offwhite">
 
-      {/*
-        ── Hero / video placeholder ──────────────────────────────────────
-        To add a video later, insert inside the hero div before the overlay:
-          <video autoPlay muted loop playsInline
-                 className="absolute inset-0 w-full h-full object-cover"
-                 src="/hotel.mp4" />
-        The gradient overlay is already in place.
-      */}
+      {/* ── Hero — background video ─────────────────────────────────────── */}
       <div className="relative overflow-hidden" style={{ minHeight: 260 }}>
-        {/* Static gradient placeholder — replace background-gradient div with <video> when ready */}
+        {/*
+          Static gradient fallback sits behind the video and is always visible
+          while the video loads, or if the video is missing.
+        */}
         <div
           className="absolute inset-0"
           style={{ background: 'linear-gradient(160deg, #8A4B33 0%, #C56B4A 45%, #E8DCC8 100%)' }}
         />
-        {/* Subtle texture overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(45deg, #FAF6F0 0, #FAF6F0 1px, transparent 0, transparent 50%)',
-            backgroundSize: '20px 20px',
-          }}
+
+        {/*
+          Background video.
+          - poster="/hero-video.mp4#t=0.001" gives iOS a first-frame thumbnail.
+          - When prefers-reduced-motion is set, autoPlay is suppressed so the
+            video stays on the first frame (static poster effect).
+          - object-cover fills the container without distortion.
+        */}
+        <video
+          src="/hero-video.mp4"
+          autoPlay={!reducedMotion}
+          muted
+          loop
+          playsInline
+          poster="/hero-video.mp4#t=0.001"
+          className="absolute inset-0 w-full h-full"
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
+          aria-hidden="true"
         />
         {/* Gradient overlay — stays on top of the future video too */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
