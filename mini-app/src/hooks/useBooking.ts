@@ -1,15 +1,6 @@
 import { useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import type { RoomType, PaymentMethod, BookingResult, UserBooking } from '../types'
-
-const ROOM_PRICE: Record<RoomType, number> = {
-  standard:     60,
-  junior_suite: 100,
-  suite:        160,
-}
-
-type RoomRow = { id: string; room_number?: string }
-type RoomsJoin = { room_number: string; type: string } | null
+import type { RoomType, PaymentMethod, BookingResult, UserBooking, BookingStatus } from '../types'
 
 export function useBooking() {
   const [loading, setLoading] = useState(false)
@@ -29,55 +20,24 @@ export function useBooking() {
       setLoading(true)
       setError(null)
       try {
-        // Find an available room (same RPC the bot uses)
-        const { data: roomData, error: roomErr } = await supabase.rpc('first_available_room', {
-          p_type:      params.roomType,
-          p_check_in:  params.checkIn,
-          p_check_out: params.checkOut,
+        // Direct .insert() is blocked by RLS (anon JWT has no telegram_id claim).
+        // create_booking_miniapp is SECURITY DEFINER — bypasses RLS safely.
+        const { data, error: rpcErr } = await supabase.rpc('create_booking_miniapp', {
+          p_telegram_id:    params.telegramId,
+          p_room_type:      params.roomType,
+          p_check_in:       params.checkIn,
+          p_check_out:      params.checkOut,
+          p_guest_name:     params.guestName,
+          p_guest_phone:    params.guestPhone,
+          p_guests_count:   params.guestsCount,
+          p_payment_method: params.paymentMethod,
         })
-        if (roomErr) throw roomErr
-        // RPC may return single object or single-element array
-        const room = (Array.isArray(roomData) ? roomData[0] : roomData) as RoomRow | null
-        if (!room?.id) {
-          setError('Нет свободных номеров на выбранные даты')
-          return null
-        }
-
-        const nights = Math.round(
-          (new Date(params.checkOut).getTime() - new Date(params.checkIn).getTime()) / 86400000,
-        )
-        const totalPrice = nights * ROOM_PRICE[params.roomType]
-
-        // Insert booking directly — same field names the bot uses
-        const { data, error: insertErr } = await supabase
-          .from('bookings')
-          .insert({
-            user_telegram_id: params.telegramId,
-            room_id:          room.id,
-            room_type:        params.roomType,
-            check_in:         params.checkIn,
-            check_out:        params.checkOut,
-            nights,
-            total_price:      totalPrice,
-            guest_name:       params.guestName,
-            guest_phone:      params.guestPhone,
-            guests_count:     params.guestsCount,
-            payment_method:   params.paymentMethod,
-            payment_status:   'pending',
-            status:           'confirmed',
-            source:           'miniapp',
-          })
-          .select('*, rooms(room_number, type)')
-          .single()
-
-        if (insertErr) throw insertErr
+        if (rpcErr) throw rpcErr
         if (!data) return null
-
-        const roomsJoin = (data as { rooms: RoomsJoin }).rooms
 
         return {
           id:             data.id as string,
-          room_number:    roomsJoin?.room_number ?? room.room_number ?? '?',
+          room_number:    data.room_number as string,
           room_type:      data.room_type as RoomType,
           check_in:       data.check_in as string,
           check_out:      data.check_out as string,
@@ -103,30 +63,37 @@ export function useBooking() {
       setLoading(true)
       setError(null)
       try {
-        // Same query the bot uses, with room join for room_number
-        const { data, error: err } = await supabase
-          .from('bookings')
-          .select('*, rooms(room_number, type)')
-          .eq('user_telegram_id', telegramId)
-          .order('created_at', { ascending: false })
-          .limit(10)
-        if (err) throw err
-        return (data ?? []).map((b) => {
-          const roomsJoin = (b as { rooms: RoomsJoin }).rooms
-          return {
-            id:             b.id as string,
-            room_number:    roomsJoin?.room_number ?? '?',
-            room_type:      b.room_type as RoomType,
-            check_in:       b.check_in as string,
-            check_out:      b.check_out as string,
-            nights:         b.nights as number,
-            total_price:    b.total_price as number,
-            status:         b.status as string,
-            payment_method: b.payment_method as string,
-            guest_name:     b.guest_name as string,
-            created_at:     b.created_at as string,
-          } as UserBooking
+        // Direct .select() is also blocked by RLS for the same reason.
+        // get_user_bookings_miniapp is SECURITY DEFINER — bypasses RLS safely.
+        const { data, error: err } = await supabase.rpc('get_user_bookings_miniapp', {
+          p_telegram_id: telegramId,
         })
+        if (err) throw err
+        return (data ?? []).map((b: {
+          id: string
+          room_number: string
+          room_type: RoomType
+          check_in: string
+          check_out: string
+          nights: number
+          total_price: number
+          status: BookingStatus
+          payment_method: PaymentMethod
+          guest_name: string
+          created_at: string
+        }) => ({
+          id:             b.id,
+          room_number:    b.room_number,
+          room_type:      b.room_type,
+          check_in:       b.check_in,
+          check_out:      b.check_out,
+          nights:         b.nights,
+          total_price:    b.total_price,
+          status:         b.status,
+          payment_method: b.payment_method,
+          guest_name:     b.guest_name,
+          created_at:     b.created_at,
+        } as UserBooking))
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Ошибка загрузки')
         return []
