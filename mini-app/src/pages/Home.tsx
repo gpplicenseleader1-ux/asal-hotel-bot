@@ -126,8 +126,8 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
         {/* Gradient overlay — pointer-events:none so it doesn't block language button clicks */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" style={{ pointerEvents: 'none' }} />
 
-        {/* Language switcher */}
-        <div className="absolute top-4 right-4 flex gap-1 z-10">
+        {/* Language switcher — z-20 beats the z-10 hero-text container that covers h-full */}
+        <div className="absolute top-4 right-4 flex gap-1 z-20">
           {LANGS.map((l) => (
             <button
               key={l}
@@ -143,8 +143,8 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
           ))}
         </div>
 
-        {/* Hero text */}
-        <div className="relative z-10 flex flex-col items-center justify-end h-full px-5 pb-8 pt-14 text-center">
+        {/* Hero text — pointer-events:none so it never blocks the language switcher above */}
+        <div className="relative z-10 flex flex-col items-center justify-end h-full px-5 pb-8 pt-14 text-center" style={{ pointerEvents: 'none' }}>
           <p className="label-caps text-white/60 mb-2 tracking-[0.35em]">Bukhara · Uzbekistan</p>
           <h1 className="font-serif text-white text-4xl font-semibold leading-tight drop-shadow-lg">
             Asal Boutique Hotel
