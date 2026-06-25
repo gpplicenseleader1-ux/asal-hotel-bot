@@ -100,7 +100,7 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
         */}
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(160deg, #8A4B33 0%, #C56B4A 45%, #E8DCC8 100%)' }}
+          style={{ background: 'linear-gradient(160deg, #8A4B33 0%, #C56B4A 45%, #E8DCC8 100%)', pointerEvents: 'none' }}
         />
 
         {/*
@@ -110,6 +110,8 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
             video stays on the first frame (static poster effect).
           - object-cover fills the container without distortion.
         */}
+        {/* pointer-events:none so the video element never intercepts taps on the
+            language switcher buttons above it (critical on mobile/Telegram WebApp). */}
         <video
           src="/hero-video.mp4"
           autoPlay={!reducedMotion}
@@ -118,11 +120,11 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
           playsInline
           poster="/hero-video.mp4#t=0.001"
           className="absolute inset-0 w-full h-full"
-          style={{ objectFit: 'cover', objectPosition: 'center' }}
+          style={{ objectFit: 'cover', objectPosition: 'center', pointerEvents: 'none' }}
           aria-hidden="true"
         />
-        {/* Gradient overlay — stays on top of the future video too */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" />
+        {/* Gradient overlay — pointer-events:none so it doesn't block language button clicks */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/55" style={{ pointerEvents: 'none' }} />
 
         {/* Language switcher */}
         <div className="absolute top-4 right-4 flex gap-1 z-10">

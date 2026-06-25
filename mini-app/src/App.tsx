@@ -6,7 +6,7 @@ import { Home } from './pages/Home'
 import { BookingForm } from './pages/BookingForm'
 import { MyBookings } from './pages/MyBookings'
 import { Success } from './pages/Success'
-import type { Language, RoomType, BookingSuccessData } from './types'
+import type { RoomType, BookingSuccessData } from './types'
 
 type Page =
   | { name: 'home' }
@@ -23,8 +23,10 @@ const pageVariants = {
 }
 
 export default function App() {
-  const { lang: tgLang } = useTelegram()
-  const [lang, setLang]   = useState<Language>(tgLang)
+  // lang and setLang live in useTelegram so Telegram's own language_code
+  // is picked up automatically, and the in-app switcher updates it in the
+  // same state — no duplicate state / no divergence.
+  const { lang, setLang } = useTelegram()
   const [page, setPage]   = useState<Page>({ name: 'home' })
   const t = useTranslations(lang)
 

@@ -71,8 +71,8 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
   const [payment,  setPayment]  = useState<PaymentUI>('cash')
   const [errors,   setErrors]   = useState<Record<string, string>>({})
 
-  const { createBooking, loading } = useBooking()
-  const { tg, user }               = useTelegram()
+  const { createBooking, loading, error: bookingError } = useBooking()
+  const { tg, user }                                   = useTelegram()
 
   const price  = ROOM_PRICE[roomType]
   const maxG   = MAX_GUESTS[roomType]
@@ -91,6 +91,8 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
   const submitRef = useRef<() => void>(() => undefined)
 
   const handleSubmit = async () => {
+    if (loading) return  // guard against double-submit
+
     const e: Record<string, string> = {}
     if (!name.trim() || name.trim().length < 2) e.name  = t.required
     if (!phone.trim() || phone.trim().length < 7) e.phone = t.required
@@ -99,9 +101,6 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
     if (Object.keys(e).length > 0) return
 
     if (!user) { tg?.showAlert(t.error); return }
-
-    tg?.MainButton.showProgress(false)
-    tg?.MainButton.disable()
 
     const result = await createBooking({
       telegramId:    user.id,
@@ -113,9 +112,6 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
       guestsCount:   guests,
       paymentMethod: PAYMENT_DB_MAP[payment],
     })
-
-    tg?.MainButton.hideProgress()
-    tg?.MainButton.enable()
 
     if (result) {
       tg?.HapticFeedback.notificationOccurred('success')
@@ -132,8 +128,9 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
         paymentMethod: result.payment_method,
       })
     } else {
+      console.error('[BookingForm] createBooking failed:', bookingError)
       tg?.HapticFeedback.notificationOccurred('error')
-      tg?.showAlert(t.error)
+      tg?.showAlert(bookingError ?? t.error)
     }
   }
 
@@ -146,15 +143,12 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
     return () => { tg.BackButton.offClick(onBack); tg.BackButton.hide() }
   }, [tg, onBack])
 
+  // Hide the native Telegram MainButton — we use the in-page button exclusively.
+  // Showing both caused a double-submit race condition against Supabase.
   useEffect(() => {
     if (!tg?.MainButton) return
-    const btn = tg.MainButton
-    btn.setText(t.confirmBooking)
-    btn.show()
-    const cb = () => submitRef.current()
-    btn.onClick(cb)
-    return () => { btn.offClick(cb); btn.hide() }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    tg.MainButton.hide()
+    return () => { tg.MainButton.hide() }
   }, [tg])
 
   return (
