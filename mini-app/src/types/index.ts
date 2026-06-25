@@ -65,4 +65,6 @@ export interface BookingSuccessData {
   nights: number
   totalPrice: number
   guestName: string
+  guestPhone?: string
+  paymentMethod?: string
 }

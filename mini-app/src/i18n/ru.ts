@@ -59,6 +59,8 @@ export const ru = {
   enterName:            'Введите ваше имя',
   enterPhone:           '+998 XX XXX XX XX',
   minOneNight:          'Минимум 1 ночь',
+  // pdf receipt
+  downloadReceipt:      'Скачать чек',
 }
 
 export type Translations = typeof ru

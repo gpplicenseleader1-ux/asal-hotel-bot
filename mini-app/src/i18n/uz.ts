@@ -51,4 +51,5 @@ export const uz: Translations = {
   enterName:            'Ismingizni kiriting',
   enterPhone:           '+998 XX XXX XX XX',
   minOneNight:          'Kamida 1 kecha',
+  downloadReceipt:      'Kvitansiyani yuklab olish',
 }

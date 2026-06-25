@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { BedDouble, Star, Crown, ClipboardList } from 'lucide-react'
 import type { Language, RoomType } from '../types'
 import type { Translations } from '../i18n'
 
@@ -16,12 +17,14 @@ function usePrefersReducedMotion(): boolean {
   return reduced
 }
 
+type LucideIcon = typeof BedDouble
+
 interface RoomInfo {
   type:      RoomType
   price:     number
   maxGuests: number
   amenities: string[]
-  badge:     string
+  BadgeIcon: LucideIcon
   accent:    string
 }
 
@@ -31,7 +34,7 @@ const ROOMS: RoomInfo[] = [
     price:     60,
     maxGuests: 2,
     amenities: ['Wi-Fi', 'AC', 'Smart TV', 'Завтрак', 'Сейф', 'Душ'],
-    badge:     '🏨',
+    BadgeIcon: BedDouble,
     accent:    'from-sand-light to-sand',
   },
   {
@@ -39,7 +42,7 @@ const ROOMS: RoomInfo[] = [
     price:     100,
     maxGuests: 3,
     amenities: ['Wi-Fi', 'AC', 'Smart TV 55″', 'Джакузи', 'Мини-бар', 'Завтрак'],
-    badge:     '⭐',
+    BadgeIcon: Star,
     accent:    'from-terra-faint to-sand-light',
   },
   {
@@ -47,7 +50,7 @@ const ROOMS: RoomInfo[] = [
     price:     160,
     maxGuests: 4,
     amenities: ['Wi-Fi', 'AC', 'Smart TV 65″', 'Джакузи', 'Дворецкий', 'Терраса', 'Завтрак'],
-    badge:     '👑',
+    BadgeIcon: Crown,
     accent:    'from-sand to-terra-faint',
   },
 ]
@@ -162,7 +165,7 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
         initial="initial"
         animate="animate"
       >
-        {ROOMS.map(({ type, price, maxGuests, amenities, badge, accent }) => (
+        {ROOMS.map(({ type, price, maxGuests, amenities, BadgeIcon, accent }) => (
           <motion.div
             key={type}
             variants={cardVariant}
@@ -182,9 +185,9 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
                     <span className="text-charcoal-mid text-sm">{t.perNight}</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-2xl">{badge}</span>
-                  <p className="text-xs text-charcoal-mid mt-1">
+                <div className="text-right flex flex-col items-end gap-1">
+                  <BadgeIcon size={22} className="text-terra-deep" />
+                  <p className="text-xs text-charcoal-mid">
                     {t.upTo} {maxGuests} {t.guestsShort}
                   </p>
                 </div>
@@ -221,7 +224,7 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
           className="btn-outline w-full flex items-center justify-center gap-2"
           whileTap={{ scale: 0.96 }}
         >
-          <span>📋</span> {t.myBookings}
+          <ClipboardList size={16} /> {t.myBookings}
         </motion.button>
       </div>
     </div>

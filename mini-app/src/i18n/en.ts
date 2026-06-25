@@ -51,4 +51,5 @@ export const en: Translations = {
   enterName:            'Enter your name',
   enterPhone:           '+998 XX XXX XX XX',
   minOneNight:          'Minimum 1 night',
+  downloadReceipt:      'Download Receipt',
 }

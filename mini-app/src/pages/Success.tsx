@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Download } from 'lucide-react'
 import type { BookingSuccessData, RoomType } from '../types'
 import type { Translations } from '../i18n'
 import { useTelegram } from '../hooks/useTelegram'
+import { downloadBookingPdf } from '../hooks/usePdfReceipt'
 
 interface Props {
   data:   BookingSuccessData
@@ -17,6 +19,16 @@ const fmtDate = (d: string) => {
 
 export function Success({ data, t, onHome }: Props) {
   const { tg } = useTelegram()
+  const [pdfLoading, setPdfLoading] = useState(false)
+
+  const handleDownloadPdf = async () => {
+    setPdfLoading(true)
+    try {
+      await downloadBookingPdf(data, t)
+    } finally {
+      setPdfLoading(false)
+    }
+  }
 
   const roomLabel: Record<RoomType, string> = {
     standard:     t.standard,
@@ -102,16 +114,30 @@ export function Success({ data, t, onHome }: Props) {
         </div>
       </motion.div>
 
-      <motion.button
-        onClick={onHome}
-        className="btn-terra px-10 py-4 text-base flex items-center gap-2"
+      <motion.div
+        className="flex flex-col items-center gap-3 w-full max-w-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}
-        whileTap={{ scale: 0.96 }}
       >
-        ← {t.backToHome}
-      </motion.button>
+        <motion.button
+          onClick={onHome}
+          className="btn-terra w-full py-4 text-base flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.96 }}
+        >
+          ← {t.backToHome}
+        </motion.button>
+
+        <motion.button
+          onClick={() => void handleDownloadPdf()}
+          disabled={pdfLoading}
+          className="btn-outline w-full py-3.5 text-sm flex items-center justify-center gap-2"
+          whileTap={{ scale: 0.96 }}
+        >
+          <Download size={16} />
+          {pdfLoading ? t.loading : t.downloadReceipt}
+        </motion.button>
+      </motion.div>
     </div>
   )
 }

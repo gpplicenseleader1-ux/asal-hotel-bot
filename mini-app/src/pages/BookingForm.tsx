@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import {
+  Banknote, ArrowLeftRight, CreditCard, Smartphone, Landmark,
+} from 'lucide-react'
 import type { RoomType, PaymentUI, BookingSuccessData } from '../types'
 import type { Translations } from '../i18n'
 import { PAYMENT_DB_MAP } from '../types'
@@ -25,22 +28,24 @@ const ROOM_PRICE: Record<RoomType, number> = {
   suite:        160,
 }
 
+type PaymentIcon = typeof Banknote
+
 interface PaymentOption {
-  id:    PaymentUI
-  label: string
-  icon:  string
+  id:   PaymentUI
+  key:  keyof Translations
+  Icon: PaymentIcon
 }
 
 const PAYMENT_OPTIONS: PaymentOption[] = [
-  { id: 'cash',     label: 'Наличные', icon: '💵' },
-  { id: 'transfer', label: 'Перевод',  icon: '🏦' },
-  { id: 'visa_mc',  label: 'Visa/MC',  icon: '💳' },
-  { id: 'uzcard',   label: 'UzCard',   icon: '🔷' },
-  { id: 'humo',     label: 'Humo',     icon: '🟣' },
-  { id: 'payme',    label: 'Payme',    icon: '🔵' },
-  { id: 'click',    label: 'Click',    icon: '🟢' },
-  { id: 'mir',      label: 'Мир',      icon: '🔴' },
-  { id: 'sber',     label: 'Сбер',     icon: '💚' },
+  { id: 'cash',     key: 'cash',     Icon: Banknote       },
+  { id: 'transfer', key: 'transfer', Icon: ArrowLeftRight  },
+  { id: 'visa_mc',  key: 'visa_mc',  Icon: CreditCard      },
+  { id: 'uzcard',   key: 'uzcard',   Icon: CreditCard      },
+  { id: 'humo',     key: 'humo',     Icon: CreditCard      },
+  { id: 'payme',    key: 'payme',    Icon: Smartphone      },
+  { id: 'click',    key: 'click',    Icon: Smartphone      },
+  { id: 'mir',      key: 'mir',      Icon: CreditCard      },
+  { id: 'sber',     key: 'sber',     Icon: Landmark        },
 ]
 
 const todayStr = () => new Date().toISOString().split('T')[0]
@@ -115,14 +120,16 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
     if (result) {
       tg?.HapticFeedback.notificationOccurred('success')
       onSuccess({
-        bookingId:  result.id,
-        roomNumber: result.room_number,
-        roomType:   result.room_type,
-        checkIn:    result.check_in,
-        checkOut:   result.check_out,
-        nights:     result.nights,
-        totalPrice: result.total_price,
-        guestName:  result.guest_name,
+        bookingId:     result.id,
+        roomNumber:    result.room_number,
+        roomType:      result.room_type,
+        checkIn:       result.check_in,
+        checkOut:      result.check_out,
+        nights:        result.nights,
+        totalPrice:    result.total_price,
+        guestName:     result.guest_name,
+        guestPhone:    result.guest_phone,
+        paymentMethod: result.payment_method,
       })
     } else {
       tg?.HapticFeedback.notificationOccurred('error')
@@ -278,36 +285,34 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
         >
           <h3 className="label-caps text-terra mb-3">{t.paymentMethod}</h3>
           <div className="grid grid-cols-3 gap-2">
-            {PAYMENT_OPTIONS.map(({ id, label, icon }) => (
+            {PAYMENT_OPTIONS.map(({ id, key, Icon }) => (
               <motion.button
                 key={id}
                 onClick={() => setPayment(id)}
                 whileTap={{ scale: 0.93 }}
                 className={`flex flex-col items-center justify-center py-3 px-2 rounded-2xl border-2 transition-all duration-150 ${
                   payment === id
-                    ? 'border-terra bg-terra-faint text-charcoal shadow-sm'
+                    ? 'border-terra bg-terra-faint text-terra-deep shadow-sm'
                     : 'border-sand bg-white text-charcoal-mid'
                 }`}
               >
-                <span className="text-xl mb-1 leading-none">{icon}</span>
-                <span className="text-xs font-medium leading-tight text-center">{label}</span>
+                <Icon size={18} className="mb-1" />
+                <span className="text-xs font-medium leading-tight text-center">{String(t[key])}</span>
               </motion.button>
             ))}
           </div>
         </motion.div>
 
-        {/* Fallback submit (non-Telegram browser) */}
-        {!tg && (
-          <motion.button
-            onClick={() => void handleSubmit()}
-            disabled={loading}
-            className="btn-terra w-full py-4 text-base flex items-center justify-center"
-            whileTap={{ scale: 0.96 }}
-            custom={4} variants={sectionVariant} initial="initial" animate="animate"
-          >
-            {loading ? t.loading : t.confirmBooking}
-          </motion.button>
-        )}
+        {/* Submit button — always visible */}
+        <motion.button
+          onClick={() => void handleSubmit()}
+          disabled={loading}
+          className="btn-terra w-full py-4 text-base flex items-center justify-center"
+          whileTap={{ scale: 0.96 }}
+          custom={4} variants={sectionVariant} initial="initial" animate="animate"
+        >
+          {loading ? t.loading : t.confirmBooking}
+        </motion.button>
       </div>
     </div>
   )

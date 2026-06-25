@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Clock, CheckCircle2, XCircle, Flag, Building2, User, CreditCard, ClipboardList } from 'lucide-react'
 import type { UserBooking, BookingStatus } from '../types'
 import type { Translations } from '../i18n'
 import { useBooking } from '../hooks/useBooking'
@@ -10,17 +11,19 @@ interface Props {
   onBack: () => void
 }
 
+type LucideIcon = typeof Clock
+
 interface StatusStyle {
-  icon:  string
+  Icon:  LucideIcon
   color: string
   bg:    string
 }
 
 const STATUS_STYLE: Record<BookingStatus, StatusStyle> = {
-  pending:   { icon: '⏳', color: 'text-amber-700',    bg: 'bg-amber-50'   },
-  confirmed: { icon: '✅', color: 'text-green-700',    bg: 'bg-green-50'   },
-  cancelled: { icon: '❌', color: 'text-red-600',      bg: 'bg-red-50'     },
-  completed: { icon: '🏁', color: 'text-charcoal-mid', bg: 'bg-sand-light' },
+  pending:   { Icon: Clock,         color: 'text-amber-700',    bg: 'bg-amber-50'   },
+  confirmed: { Icon: CheckCircle2,  color: 'text-green-700',    bg: 'bg-green-50'   },
+  cancelled: { Icon: XCircle,       color: 'text-red-600',      bg: 'bg-red-50'     },
+  completed: { Icon: Flag,          color: 'text-charcoal-mid', bg: 'bg-sand-light' },
 }
 
 const fmtDate = (d: string) => {
@@ -81,7 +84,7 @@ export function MyBookings({ t, onBack }: Props) {
         >
           ←
         </motion.button>
-        <p className="font-serif text-white text-xl font-semibold">📋 {t.myBookings}</p>
+        <p className="font-serif text-white text-xl font-semibold flex items-center gap-2"><ClipboardList size={18} /> {t.myBookings}</p>
       </div>
 
       {/* Divider */}
@@ -112,7 +115,7 @@ export function MyBookings({ t, onBack }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
           >
-            <p className="text-5xl mb-4">🏨</p>
+            <Building2 size={48} className="text-terra mx-auto mb-4" />
             <p className="font-serif text-charcoal text-xl mb-1">Asal Hotel</p>
             <p className="text-charcoal-mid text-sm mb-6">{t.noBookings}</p>
             <motion.button
@@ -134,12 +137,13 @@ export function MyBookings({ t, onBack }: Props) {
           >
             {bookings.map((b) => {
               const style = STATUS_STYLE[b.status] ?? STATUS_STYLE.pending
+              const { Icon: StatusIcon } = style
               return (
                 <motion.div key={b.id} variants={itemVariant} className="card-premium">
                   {/* Status bar */}
                   <div className={`${style.bg} px-4 py-2 flex items-center justify-between border-b border-sand`}>
-                    <span className={`text-xs font-semibold uppercase tracking-wide ${style.color}`}>
-                      {style.icon} {statusLabel[b.status]}
+                    <span className={`text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5 ${style.color}`}>
+                      <StatusIcon size={13} /> {statusLabel[b.status]}
                     </span>
                     <span className="text-xs font-mono text-charcoal-light">
                       #{b.id.slice(0, 8).toUpperCase()}
@@ -164,9 +168,11 @@ export function MyBookings({ t, onBack }: Props) {
                     </div>
 
                     <div className="text-xs text-charcoal-light border-t border-sand pt-2 flex items-center gap-2">
-                      <span>👤 {b.guest_name}</span>
+                      <User size={12} className="shrink-0" />
+                      <span>{b.guest_name}</span>
                       <span>·</span>
-                      <span>💳 {b.payment_method}</span>
+                      <CreditCard size={12} className="shrink-0" />
+                      <span>{b.payment_method}</span>
                     </div>
                   </div>
                 </motion.div>
