@@ -24,6 +24,31 @@ export function useBooking() {
         // DEBUG: log what Telegram gives us for the user object
         console.error('[createBooking] tg user:', JSON.stringify(tg?.initDataUnsafe?.user))
 
+        // ── STEP 4 DIAGNOSTIC ─────────────────────────────────────────────────
+        // Test basic Supabase connectivity BEFORE the RPC call.
+        // Determines: is the failure global (all Supabase requests fail) or
+        // specific to the RPC (rooms read works, but insert RPC fails)?
+        // If the basic read throws → env var / network / CORS issue upstream.
+        // If it succeeds → the RPC call itself is the problem.
+        try {
+          const { error: pingErr } = await supabase.from('rooms').select('id').limit(1)
+          if (pingErr) {
+            const msg = `[DIAG] basic read FAILED — ${pingErr.message} (code: ${pingErr.code})`
+            console.error(msg)
+            tg?.showAlert(msg)
+            setError(pingErr.message)
+            return null
+          }
+          console.error('[DIAG] basic read OK — Supabase connectivity confirmed')
+        } catch (pingEx) {
+          const msg = `[DIAG] fetch itself threw on basic read: ${pingEx instanceof Error ? pingEx.message : String(pingEx)}`
+          console.error(msg)
+          tg?.showAlert(msg)
+          setError('Ошибка сети при проверке связи с сервером')
+          return null
+        }
+        // ── END DIAGNOSTIC ────────────────────────────────────────────────────
+
         // Direct .insert() is blocked by RLS (anon JWT has no telegram_id claim).
         // create_booking_miniapp is SECURITY DEFINER — bypasses RLS safely.
         const { data, error: rpcErr } = await supabase.rpc('create_booking_miniapp', {
