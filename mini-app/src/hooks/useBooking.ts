@@ -17,9 +17,13 @@ export function useBooking() {
       guestsCount:   number
       paymentMethod: PaymentMethod
     }): Promise<BookingResult | null> => {
+      const tg = window.Telegram?.WebApp
       setLoading(true)
       setError(null)
       try {
+        // DEBUG: log what Telegram gives us for the user object
+        console.error('[createBooking] tg user:', JSON.stringify(tg?.initDataUnsafe?.user))
+
         // Direct .insert() is blocked by RLS (anon JWT has no telegram_id claim).
         // create_booking_miniapp is SECURITY DEFINER — bypasses RLS safely.
         const { data, error: rpcErr } = await supabase.rpc('create_booking_miniapp', {
@@ -49,7 +53,13 @@ export function useBooking() {
           guest_phone:    data.guest_phone as string,
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Ошибка бронирования')
+        console.error('[createBooking] RPC failed:', JSON.stringify(e, null, 2))
+        const err = e as { message?: string; code?: string; details?: string }
+        const msg     = err?.message  ?? 'unknown error'
+        const code    = err?.code     ?? ''
+        const details = err?.details  ?? ''
+        tg?.showAlert(`DEBUG: ${msg} | code: ${code} | details: ${details}`)
+        setError(msg || 'Ошибка бронирования')
         return null
       } finally {
         setLoading(false)
