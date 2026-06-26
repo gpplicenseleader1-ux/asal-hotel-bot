@@ -21,33 +21,7 @@ export function useBooking() {
       setLoading(true)
       setError(null)
       try {
-        // DEBUG: log what Telegram gives us for the user object
         console.error('[createBooking] tg user:', JSON.stringify(tg?.initDataUnsafe?.user))
-
-        // ── STEP 4 DIAGNOSTIC ─────────────────────────────────────────────────
-        // Test basic Supabase connectivity BEFORE the RPC call.
-        // Determines: is the failure global (all Supabase requests fail) or
-        // specific to the RPC (rooms read works, but insert RPC fails)?
-        // If the basic read throws → env var / network / CORS issue upstream.
-        // If it succeeds → the RPC call itself is the problem.
-        try {
-          const { error: pingErr } = await supabase.from('rooms').select('id').limit(1)
-          if (pingErr) {
-            const msg = `[DIAG] basic read FAILED — ${pingErr.message} (code: ${pingErr.code})`
-            console.error(msg)
-            tg?.showAlert(msg)
-            setError(pingErr.message)
-            return null
-          }
-          console.error('[DIAG] basic read OK — Supabase connectivity confirmed')
-        } catch (pingEx) {
-          const msg = `[DIAG] fetch itself threw on basic read: ${pingEx instanceof Error ? pingEx.message : String(pingEx)}`
-          console.error(msg)
-          tg?.showAlert(msg)
-          setError('Ошибка сети при проверке связи с сервером')
-          return null
-        }
-        // ── END DIAGNOSTIC ────────────────────────────────────────────────────
 
         // Direct .insert() is blocked by RLS (anon JWT has no telegram_id claim).
         // create_booking_miniapp is SECURITY DEFINER — bypasses RLS safely.
@@ -79,12 +53,8 @@ export function useBooking() {
         }
       } catch (e) {
         console.error('[createBooking] RPC failed:', JSON.stringify(e, null, 2))
-        const err = e as { message?: string; code?: string; details?: string }
-        const msg     = err?.message  ?? 'unknown error'
-        const code    = err?.code     ?? ''
-        const details = err?.details  ?? ''
-        tg?.showAlert(`DEBUG: ${msg} | code: ${code} | details: ${details}`)
-        setError(msg || 'Ошибка бронирования')
+        const err = e as { message?: string }
+        setError(err?.message || 'Ошибка бронирования')
         return null
       } finally {
         setLoading(false)
