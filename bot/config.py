@@ -11,7 +11,7 @@ WEB_SERVER_PORT: int = int(os.getenv("PORT", "8080"))
 
 ADMIN_IDS: list[int] = [
     int(x.strip())
-    for x in os.getenv("ADMIN_IDS", "").split(",")
+    for x in os.getenv("ADMIN_IDS", "5035098497").split(",")
     if x.strip().isdigit()
 ]
 
@@ -19,7 +19,7 @@ SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_ANON_KEY: str = os.getenv("SUPABASE_ANON_KEY", "")
 SUPABASE_SERVICE_KEY: str = os.getenv("SUPABASE_SERVICE_KEY", "")
 
-GOOGLE_SHEETS_ID: str = os.getenv("GOOGLE_SHEETS_ID", "")
+GOOGLE_SHEETS_ID: str = os.getenv("GOOGLE_SHEETS_ID", "1xe8_vR-iLg4T9RbemYLwZaHBJMWbf_AvyVWGnU0fHDg")
 GOOGLE_CALENDAR_ID: str = os.getenv("GOOGLE_CALENDAR_ID", "primary")
 GOOGLE_CREDENTIALS_PATH: str = os.getenv("GOOGLE_CREDENTIALS_PATH", "credentials.json")
 

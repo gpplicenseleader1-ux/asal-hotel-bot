@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Banknote, ArrowLeftRight, CreditCard, Smartphone, Landmark,
@@ -6,7 +6,6 @@ import {
 import type { RoomType, PaymentUI, BookingSuccessData } from '../types'
 import type { Translations } from '../i18n'
 import { PAYMENT_DB_MAP } from '../types'
-import { useBooking } from '../hooks/useBooking'
 import { useTelegram } from '../hooks/useTelegram'
 
 interface Props {
@@ -62,7 +61,7 @@ const sectionVariant = {
   }),
 }
 
-export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
+export function BookingForm({ roomType, t, onBack }: Props) {
   const [checkIn,  setCheckIn]  = useState(addDays(1))
   const [checkOut, setCheckOut] = useState(addDays(2))
   const [name,     setName]     = useState('')
@@ -71,8 +70,8 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
   const [payment,  setPayment]  = useState<PaymentUI>('cash')
   const [errors,   setErrors]   = useState<Record<string, string>>({})
 
-  const { createBooking, loading, error: bookingError } = useBooking()
-  const { tg, user }                                   = useTelegram()
+  const [sending, setSending] = useState(false)
+  const { tg, user }         = useTelegram()
 
   const price  = ROOM_PRICE[roomType]
   const maxG   = MAX_GUESTS[roomType]
@@ -88,10 +87,8 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
     suite:        t.suite,
   }
 
-  const submitRef = useRef<() => void>(() => undefined)
-
-  const handleSubmit = async () => {
-    if (loading) return  // guard against double-submit
+  const handleSubmit = () => {
+    if (sending) return
 
     const e: Record<string, string> = {}
     if (!name.trim() || name.trim().length < 2) e.name  = t.required
@@ -102,39 +99,24 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
 
     if (!user) { tg?.showAlert(t.error); return }
 
-    const result = await createBooking({
-      telegramId:    user.id,
-      roomType,
-      checkIn,
-      checkOut,
-      guestName:     name.trim(),
-      guestPhone:    phone.trim(),
-      guestsCount:   guests,
-      paymentMethod: PAYMENT_DB_MAP[payment],
-    })
-
-    if (result) {
-      tg?.HapticFeedback.notificationOccurred('success')
-      onSuccess({
-        bookingId:     result.id,
-        roomNumber:    result.room_number,
-        roomType:      result.room_type,
-        checkIn:       result.check_in,
-        checkOut:      result.check_out,
-        nights:        result.nights,
-        totalPrice:    result.total_price,
-        guestName:     result.guest_name,
-        guestPhone:    result.guest_phone,
-        paymentMethod: result.payment_method,
-      })
-    } else {
-      console.error('[BookingForm] createBooking failed:', bookingError)
-      tg?.HapticFeedback.notificationOccurred('error')
-      tg?.showAlert(bookingError ?? t.error)
+    setSending(true)
+    try {
+      tg?.sendData(JSON.stringify({
+        room_type:      roomType,
+        check_in:       checkIn,
+        check_out:      checkOut,
+        guest_name:     name.trim(),
+        guest_phone:    phone.trim(),
+        guests_count:   guests,
+        payment_method: PAYMENT_DB_MAP[payment],
+      }))
+      // sendData() closes the mini-app — no further state updates needed
+    } catch (err) {
+      setSending(false)
+      tg?.HapticFeedback?.notificationOccurred('error')
+      tg?.showAlert((err as Error).message || t.error)
     }
   }
-
-  useEffect(() => { submitRef.current = handleSubmit })
 
   useEffect(() => {
     if (!tg?.BackButton) return
@@ -299,13 +281,13 @@ export function BookingForm({ roomType, t, onBack, onSuccess }: Props) {
 
         {/* Submit button — always visible */}
         <motion.button
-          onClick={() => void handleSubmit()}
-          disabled={loading}
+          onClick={handleSubmit}
+          disabled={sending}
           className="btn-terra w-full py-4 text-base flex items-center justify-center"
           whileTap={{ scale: 0.96 }}
           custom={4} variants={sectionVariant} initial="initial" animate="animate"
         >
-          {loading ? t.loading : t.confirmBooking}
+          {sending ? t.loading : t.confirmBooking}
         </motion.button>
       </div>
     </div>

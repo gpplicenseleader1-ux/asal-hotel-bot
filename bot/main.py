@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 import config
-from handlers import start, booking, admin, ai_assistant, loyalty
+from handlers import start, booking, admin, ai_assistant, loyalty, miniapp
 from middlewares.i18n import I18nMiddleware
 
 logging.basicConfig(
@@ -23,6 +23,7 @@ async def main() -> None:
     dp.message.middleware(I18nMiddleware())
     dp.callback_query.middleware(I18nMiddleware())
 
+    dp.include_router(miniapp.router)
     dp.include_router(start.router)
     dp.include_router(booking.router)
     dp.include_router(admin.router)

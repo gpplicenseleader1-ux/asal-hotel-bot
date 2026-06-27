@@ -52,29 +52,37 @@ def init_sheets() -> None:
         ])
 
 
+_BOOKINGS_HEADER = [
+    "Booking ID", "Guest Name", "Phone", "Room Type",
+    "Check-in", "Check-out", "Nights", "Guests",
+    "Payment", "Total", "Status", "Created At",
+]
+
+
 async def append_booking(booking: dict[str, Any], room_number: str) -> None:
     try:
         ws = _get_sheet("Брони")
-        booking_id = booking.get("id", "")[:8].upper()
+        if not ws.row_values(1):
+            ws.append_row(_BOOKINGS_HEADER)
+        booking_id = str(booking.get("id", ""))[:8].upper()
         row = [
             booking_id,
-            datetime.now().strftime("%d.%m.%Y %H:%M"),
             booking.get("guest_name", ""),
             booking.get("guest_phone", ""),
             booking.get("room_type", ""),
-            room_number,
             booking.get("check_in", ""),
             booking.get("check_out", ""),
             booking.get("nights", 0),
-            booking.get("total_price", 0),
+            booking.get("guests_count", 1),
             booking.get("payment_method", ""),
-            booking.get("status", "pending"),
-            booking.get("source", "telegram"),
+            booking.get("total_price", 0),
+            booking.get("status", "confirmed"),
+            datetime.now().strftime("%d.%m.%Y %H:%M"),
         ]
         ws.append_row(row)
-        logger.info(f"Booking {booking_id} appended to Sheets")
+        logger.info("Booking %s appended to Sheets", booking_id)
     except Exception as e:
-        logger.error(f"Sheets append error: {e}")
+        logger.error("Sheets append error: %s", e)
 
 
 async def update_booking_status_in_sheet(booking_id: str, new_status: str) -> None:

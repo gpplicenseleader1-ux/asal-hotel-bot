@@ -9,3 +9,6 @@ google-api-python-client>=2.122.0
 anthropic>=0.40.0
 pytz>=2024.1
 python-dateutil>=2.9.0.post0
+fpdf2>=2.7.9
+qrcode[pil]>=7.4.2
+Pillow>=10.0.0

@@ -1,9 +1,17 @@
+import asyncio
 import uuid
 import logging
 from datetime import date
 from typing import Any, Optional
 
+from aiogram import Bot
+from aiogram.types import BufferedInputFile
+
+import config
+from keyboards.admin import booking_action_keyboard
+from middlewares.i18n import t
 from services.supabase_client import get_service_client
+from services import sheets_service, calendar_service, pdf_service
 from utils.helpers import loyalty_tier_from_nights
 
 logger = logging.getLogger(__name__)
@@ -181,3 +189,101 @@ async def get_all_user_telegram_ids() -> list[int]:
     db = get_service_client()
     result = db.table("users").select("telegram_id").execute()
     return [row["telegram_id"] for row in (result.data or [])]
+
+
+async def notify_booking_created(
+    booking: dict[str, Any],
+    room_number: str,
+    user_telegram_id: int,
+    bot: Bot,
+    lang: str = "ru",
+) -> None:
+    booking_id  = str(booking.get("id", ""))
+    short_id    = booking_id[:8].upper()
+    room_type   = str(booking.get("room_type", ""))
+    check_in    = str(booking.get("check_in", ""))
+    check_out   = str(booking.get("check_out", ""))
+    nights      = booking.get("nights", 0)
+    total_price = booking.get("total_price", 0)
+    guest_name  = str(booking.get("guest_name", ""))
+    guest_phone = str(booking.get("guest_phone", ""))
+
+    room_label    = config.ROOM_TYPES.get(room_type, {}).get(lang, {}).get("name", room_type)
+    payment_label = config.PAYMENT_METHODS.get(str(booking.get("payment_method", "")), {}).get(lang, "")
+
+    def _fmt(d: str) -> str:
+        try:
+            y, m, day = d.split("-")
+            return f"{day}.{m}.{y}"
+        except (ValueError, AttributeError):
+            return d
+
+    ci_fmt = _fmt(check_in)
+    co_fmt = _fmt(check_out)
+
+    # 1. Admin notifications
+    async def _notify_admins() -> None:
+        admin_msg = (
+            f"🔔 <b>Новое бронирование (мини-приложение)</b>\n\n"
+            f"📋 <code>{short_id}</code>\n"
+            f"👤 {guest_name}  📱 {guest_phone}\n"
+            f"🏨 {room_label}  #{room_number}\n"
+            f"📅 {ci_fmt} → {co_fmt} ({nights} н.)\n"
+            f"💳 {payment_label}\n"
+            f"💰 ${total_price}"
+        )
+        for admin_id in config.ADMIN_IDS:
+            try:
+                await bot.send_message(
+                    admin_id,
+                    admin_msg,
+                    parse_mode="HTML",
+                    reply_markup=booking_action_keyboard(booking_id),
+                )
+            except Exception as exc:
+                logger.error("Admin notify %s failed: %s", admin_id, exc)
+
+    # 2. Google Sheets
+    async def _sync_sheets() -> None:
+        await sheets_service.append_booking(booking, room_number)
+
+    # 3. Client confirmation
+    async def _send_client_msg() -> None:
+        text = t(
+            "booking_success",
+            lang,
+            booking_id=short_id,
+            room_type=room_label,
+            check_in=ci_fmt,
+            check_out=co_fmt,
+            total=f"${total_price}",
+        )
+        await bot.send_message(user_telegram_id, text, parse_mode="HTML")
+
+    # 4. PDF receipt
+    async def _send_pdf() -> None:
+        pdf_bytes = pdf_service.generate_booking_pdf(booking, room_number)
+        doc = BufferedInputFile(pdf_bytes, filename=f"asal-booking-{short_id}.pdf")
+        await bot.send_document(
+            user_telegram_id,
+            doc,
+            caption=f"🧾 Квитанция бронирования #{short_id}",
+        )
+
+    # 5. Google Calendar event
+    async def _sync_calendar() -> None:
+        await calendar_service.create_booking_event(booking, room_number)
+
+    async def _safe(coro_fn: Any, name: str) -> None:
+        try:
+            await coro_fn()
+        except Exception as exc:
+            logger.error("notify_booking_created[%s] failed: %s", name, exc, exc_info=True)
+
+    await asyncio.gather(
+        _safe(_notify_admins,    "admins"),
+        _safe(_sync_sheets,      "sheets"),
+        _safe(_send_client_msg,  "client_msg"),
+        _safe(_send_pdf,         "pdf"),
+        _safe(_sync_calendar,    "calendar"),
+    )
