@@ -11,7 +11,7 @@ from keyboards.booking import (
     phone_keyboard, payment_keyboard, confirm_keyboard,
 )
 from keyboards.admin import booking_action_keyboard
-from keyboards.main_menu import main_menu_keyboard
+from keyboards.main_menu import main_menu_keyboard, webapp_keyboard, WEBAPP_PROMPT
 from middlewares.i18n import t
 from services import booking_service, sheets_service, calendar_service
 from utils.helpers import format_date, nights_count, calculate_price, format_price, get_booking_id
@@ -276,6 +276,11 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
             parse_mode="HTML",
             reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
         )
+        if config.MINI_APP_URL:
+            await callback.message.answer(
+                WEBAPP_PROMPT.get(lang, WEBAPP_PROMPT["ru"]),
+                reply_markup=webapp_keyboard(lang, config.MINI_APP_URL),
+            )
     except Exception as e:
         logger.error("Failed to send booking success message: %s", e, exc_info=True)
 
@@ -327,6 +332,11 @@ async def cancel_booking(callback: CallbackQuery, state: FSMContext, lang: str =
         reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
         parse_mode="HTML",
     )
+    if config.MINI_APP_URL:
+        await callback.message.answer(
+            WEBAPP_PROMPT.get(lang, WEBAPP_PROMPT["ru"]),
+            reply_markup=webapp_keyboard(lang, config.MINI_APP_URL),
+        )
     await callback.answer()
 
 

@@ -100,6 +100,15 @@ export function BookingForm({ roomType, t, onBack }: Props) {
     if (!user) { tg?.showAlert(t.error); return }
 
     setSending(true)
+
+    // sendData() closes the app immediately when opened via KeyboardButton.
+    // If the app is still open after 3 s the context doesn't support sendData
+    // (e.g. inline keyboard or browser) — reset loading and show an error.
+    const fallbackTimer = setTimeout(() => {
+      setSending(false)
+      tg?.showAlert(t.error)
+    }, 3000)
+
     try {
       tg?.sendData(JSON.stringify({
         room_type:      roomType,
@@ -110,8 +119,9 @@ export function BookingForm({ roomType, t, onBack }: Props) {
         guests_count:   guests,
         payment_method: PAYMENT_DB_MAP[payment],
       }))
-      // sendData() closes the mini-app — no further state updates needed
+      // sendData() closes the mini-app synchronously — fallbackTimer is a safety net
     } catch (err) {
+      clearTimeout(fallbackTimer)
       setSending(false)
       tg?.HapticFeedback?.notificationOccurred('error')
       tg?.showAlert((err as Error).message || t.error)

@@ -3,7 +3,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from keyboards.main_menu import lang_keyboard, main_menu_keyboard, back_to_menu_keyboard
+from keyboards.main_menu import lang_keyboard, main_menu_keyboard, back_to_menu_keyboard, webapp_keyboard, WEBAPP_PROMPT
 from middlewares.i18n import set_user_lang, get_translator, t
 from services.booking_service import get_or_create_user, update_user_language
 import config
@@ -55,6 +55,11 @@ async def show_main_menu(message: Message, lang: str) -> None:
         reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
         parse_mode="HTML",
     )
+    if config.MINI_APP_URL:
+        await message.answer(
+            WEBAPP_PROMPT.get(lang, WEBAPP_PROMPT["ru"]),
+            reply_markup=webapp_keyboard(lang, config.MINI_APP_URL),
+        )
 
 
 @router.callback_query(F.data == "menu")
@@ -65,6 +70,11 @@ async def back_to_menu(callback: CallbackQuery, state: FSMContext, lang: str = "
         reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
         parse_mode="HTML",
     )
+    if config.MINI_APP_URL:
+        await callback.message.answer(
+            WEBAPP_PROMPT.get(lang, WEBAPP_PROMPT["ru"]),
+            reply_markup=webapp_keyboard(lang, config.MINI_APP_URL),
+        )
     await callback.answer()
 
 
