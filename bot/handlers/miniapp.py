@@ -53,7 +53,13 @@ async def handle_web_app_booking(message: Message, lang: str = "ru") -> None:
         await message.answer(t("error_generic", lang))
         return
 
-    room = await booking_service.get_available_room(room_type, check_in, check_out)
+    try:
+        room = await booking_service.get_available_room(room_type, check_in, check_out)
+    except Exception as exc:
+        logger.error("get_available_room failed: %s", exc, exc_info=True)
+        await message.answer(t("error_generic", lang))
+        return
+
     if not room:
         await message.answer(t("no_available_rooms", lang))
         return
@@ -69,20 +75,25 @@ async def handle_web_app_booking(message: Message, lang: str = "ru") -> None:
     total_price = config.ROOM_TYPES[room_type]["price"] * nights
     room_number = str(room.get("room_number", ""))
 
-    booking = await booking_service.create_booking(
-        user_telegram_id=message.from_user.id,
-        room_id=room["id"],
-        room_type=room_type,
-        check_in=check_in,
-        check_out=check_out,
-        nights=nights,
-        total_price=total_price,
-        guest_name=guest_name,
-        guest_phone=guest_phone,
-        guests_count=guests_count,
-        payment_method=payment_method,
-        source="website",
-    )
+    try:
+        booking = await booking_service.create_booking(
+            user_telegram_id=message.from_user.id,
+            room_id=room["id"],
+            room_type=room_type,
+            check_in=check_in,
+            check_out=check_out,
+            nights=nights,
+            total_price=total_price,
+            guest_name=guest_name,
+            guest_phone=guest_phone,
+            guests_count=guests_count,
+            payment_method=payment_method,
+            source="website",
+        )
+    except Exception as exc:
+        logger.error("create_booking failed: %s", exc, exc_info=True)
+        await message.answer(t("error_generic", lang))
+        return
 
     await booking_service.update_room_status(room["id"], "occupied")
     await booking_service.update_loyalty_after_booking(message.from_user.id, nights)
