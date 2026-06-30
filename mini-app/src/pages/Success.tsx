@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Download } from 'lucide-react'
 import type { BookingSuccessData, RoomType } from '../types'
 import type { Translations } from '../i18n'
 import { useTelegram } from '../hooks/useTelegram'
-import { downloadBookingPdf } from '../hooks/usePdfReceipt'
 
 interface Props {
   data:   BookingSuccessData
@@ -19,16 +17,6 @@ const fmtDate = (d: string) => {
 
 export function Success({ data, t, onHome }: Props) {
   const { tg } = useTelegram()
-  const [pdfLoading, setPdfLoading] = useState(false)
-
-  const handleDownloadPdf = async () => {
-    setPdfLoading(true)
-    try {
-      await downloadBookingPdf(data, t)
-    } finally {
-      setPdfLoading(false)
-    }
-  }
 
   const roomLabel: Record<RoomType, string> = {
     standard:     t.standard,
@@ -103,7 +91,7 @@ export function Success({ data, t, onHome }: Props) {
             <span className="text-charcoal-mid text-sm">
               {data.nights} {data.nights === 1 ? t.night : t.nights}
             </span>
-            <span className="font-serif text-2xl font-bold text-terra">${data.totalPrice}</span>
+            <span className="font-serif text-2xl font-bold text-terra">{data.totalPrice.toLocaleString('ru-RU')} сум</span>
           </div>
           <div className="h-px bg-sand" />
           <DetailRow label="Гость" value={data.guestName} />
@@ -126,16 +114,6 @@ export function Success({ data, t, onHome }: Props) {
           whileTap={{ scale: 0.96 }}
         >
           ← {t.backToHome}
-        </motion.button>
-
-        <motion.button
-          onClick={() => void handleDownloadPdf()}
-          disabled={pdfLoading}
-          className="btn-outline w-full py-3.5 text-sm flex items-center justify-center gap-2"
-          whileTap={{ scale: 0.96 }}
-        >
-          <Download size={16} />
-          {pdfLoading ? t.loading : t.downloadReceipt}
         </motion.button>
       </motion.div>
     </div>

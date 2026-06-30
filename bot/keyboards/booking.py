@@ -16,7 +16,8 @@ def room_type_keyboard(lang: str) -> InlineKeyboardMarkup:
         name = info[lang]["name"]
         price = info["price"]
         emoji = info["emoji"]
-        builder.button(text=f"{emoji} {name} — ${price}/{night}", callback_data=f"rt:{rt}")
+        price_fmt = f"{int(price):,}".replace(",", " ")
+        builder.button(text=f"{emoji} {name} — {price_fmt} сум/{night}", callback_data=f"rt:{rt}")
     builder.button(text={"ru": "❌ Отмена", "uz": "❌ Bekor", "en": "❌ Cancel"}.get(lang, "❌ Cancel"), callback_data="book:cancel")
     builder.adjust(1)
     return builder.as_markup()

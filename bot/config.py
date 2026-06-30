@@ -30,30 +30,30 @@ MINI_APP_URL: str = os.getenv("MINI_APP_URL", "")
 
 HOTEL_NAME = "Asal Boutique Hotel"
 HOTEL_CITY = "Бухара, Узбекистан"
-HOTEL_PHONE = "+998 90 123 45 67"
+HOTEL_PHONE = "+998 91 116 71 57"
 HOTEL_ADDRESS = "ул. Накшбанди 5, Бухара"
 HOTEL_INSTAGRAM = "@asal_boutique_hotel"
 
 ROOM_TYPES = {
     "standard": {
-        "ru": {"name": "Стандарт", "desc": "Уютный номер с видом на сад, king-size кровать, Wi-Fi"},
-        "uz": {"name": "Standart", "desc": "Bog'ga ko'rinish, king-size to'shak, Wi-Fi"},
-        "en": {"name": "Standard", "desc": "Garden view, king-size bed, Wi-Fi"},
-        "price": 60,
+        "ru": {"name": "Стандарт", "desc": "Номер + завтрак + стандартные аменити + Wi-Fi + круглосуточный сервис. До 2 гостей."},
+        "uz": {"name": "Standart", "desc": "Xona + nonushta + standart ameniteler + Wi-Fi + 24/7 xizmat. 2 ta mehmon."},
+        "en": {"name": "Standard", "desc": "Room + breakfast + standard amenities + Wi-Fi + 24/7 service. Up to 2 guests."},
+        "price": 400000,
         "emoji": "🏨",
     },
     "junior_suite": {
-        "ru": {"name": "Полулюкс", "desc": "Вид на исторический центр Бухары, джакузи, мини-бар, гостиная зона"},
-        "uz": {"name": "Yarim lyuks", "desc": "Buxoro tarixiy markazi ko'rinishi, jakuzi, mini-bar"},
-        "en": {"name": "Junior Suite", "desc": "Historic Bukhara view, jacuzzi, mini-bar, lounge area"},
-        "price": 100,
+        "ru": {"name": "Полулюкс", "desc": "Номер + завтрак + полулюкс аменити + Wi-Fi + круглосуточный сервис. До 3 гостей. При 2+ ночах: VIP трансфер + вход на смотровую площадку напротив минарета."},
+        "uz": {"name": "Yarim lyuks", "desc": "Xona + nonushta + yarim lyuks ameniteler + Wi-Fi + 24/7 xizmat. 3 ta mehmon. 2+ kechada: VIP transfer + minora yonidagi kuzatuv maydoni."},
+        "en": {"name": "Junior Suite", "desc": "Room + breakfast + junior suite amenities + Wi-Fi + 24/7 service. Up to 3 guests. 2+ nights: VIP transfer + minaret viewpoint access."},
+        "price": 600000,
         "emoji": "🌟",
     },
     "suite": {
-        "ru": {"name": "Люкс", "desc": "Роскошный люкс с гостиной, джакузи и персональным дворецким"},
-        "uz": {"name": "Lyuks", "desc": "Yashash xonasi, jakuzi va shaxsiy xizmatchi bilan hashamatli lyuks"},
-        "en": {"name": "Suite", "desc": "Luxurious suite with living room, jacuzzi and personal butler"},
-        "price": 160,
+        "ru": {"name": "Люкс", "desc": "Номер + завтрак + люкс аменити + Wi-Fi + круглосуточный сервис. До 4 гостей. При 2+ ночах: VIP трансфер + вход на смотровую площадку напротив минарета."},
+        "uz": {"name": "Lyuks", "desc": "Xona + nonushta + lyuks ameniteler + Wi-Fi + 24/7 xizmat. 4 ta mehmon. 2+ kechada: VIP transfer + minora yonidagi kuzatuv maydoni."},
+        "en": {"name": "Suite", "desc": "Room + breakfast + suite amenities + Wi-Fi + 24/7 service. Up to 4 guests. 2+ nights: VIP transfer + minaret viewpoint access."},
+        "price": 800000,
         "emoji": "👑",
     },
 }

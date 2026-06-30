@@ -31,7 +31,7 @@ interface RoomInfo {
 const ROOMS: RoomInfo[] = [
   {
     type:      'standard',
-    price:     60,
+    price:     400000,
     maxGuests: 2,
     amenities: ['Wi-Fi', 'AC', 'Smart TV', 'Завтрак', 'Сейф', 'Душ'],
     BadgeIcon: BedDouble,
@@ -39,17 +39,17 @@ const ROOMS: RoomInfo[] = [
   },
   {
     type:      'junior_suite',
-    price:     100,
+    price:     600000,
     maxGuests: 3,
-    amenities: ['Wi-Fi', 'AC', 'Smart TV 55″', 'Джакузи', 'Мини-бар', 'Завтрак'],
+    amenities: ['Wi-Fi', 'AC', 'Smart TV 55″', 'Джакузи', 'Завтрак', '24/7'],
     BadgeIcon: Star,
     accent:    'from-terra-faint to-sand-light',
   },
   {
     type:      'suite',
-    price:     160,
+    price:     800000,
     maxGuests: 4,
-    amenities: ['Wi-Fi', 'AC', 'Smart TV 65″', 'Джакузи', 'Дворецкий', 'Терраса', 'Завтрак'],
+    amenities: ['Wi-Fi', 'AC', 'Smart TV 65″', 'Джакузи', 'Завтрак', 'Терраса', '24/7'],
     BadgeIcon: Crown,
     accent:    'from-sand to-terra-faint',
   },
@@ -183,8 +183,8 @@ export function Home({ lang, setLang, t, onBook, onMyBookings }: Props) {
                     {type === 'suite' ? '✦ ' : ''}{roomLabel[type]}
                   </p>
                   <div className="flex items-baseline gap-1">
-                    <span className="font-serif text-3xl font-bold text-charcoal">${price}</span>
-                    <span className="text-charcoal-mid text-sm">{t.perNight}</span>
+                    <span className="font-serif text-2xl font-bold text-charcoal">{price.toLocaleString('ru-RU')}</span>
+                    <span className="text-charcoal-mid text-sm">сум{t.perNight}</span>
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-1">

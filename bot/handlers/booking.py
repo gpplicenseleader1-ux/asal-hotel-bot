@@ -308,7 +308,8 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
             f"🏨 {room_name}, номер {room.get('room_number', '?')}\n"
             f"📅 {format_date(check_in, 'ru')} → {format_date(check_out, 'ru')}\n"
             f"🌙 {data['nights']} ночей\n"
-            f"💰 ${data['total']}\n"
+            f"👥 Гостей: {data['guests']}\n"
+            f"💰 {format_price(data['total'])}\n"
             f"💳 {data['payment_method']}"
         )
         for admin_id in config.ADMIN_IDS:

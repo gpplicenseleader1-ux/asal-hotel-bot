@@ -22,9 +22,9 @@ const MAX_GUESTS: Record<RoomType, number> = {
 }
 
 const ROOM_PRICE: Record<RoomType, number> = {
-  standard:     60,
-  junior_suite: 100,
-  suite:        160,
+  standard:     400000,
+  junior_suite: 600000,
+  suite:        800000,
 }
 
 type PaymentIcon = typeof Banknote
@@ -159,7 +159,7 @@ export function BookingForm({ roomType, t, onBack }: Props) {
         </motion.button>
         <div>
           <p className="font-serif text-white text-xl font-semibold leading-tight">{roomLabel[roomType]}</p>
-          <p className="text-white/70 text-sm">${price}{t.perNight}</p>
+          <p className="text-white/70 text-sm">{price.toLocaleString('ru-RU')} сум{t.perNight}</p>
         </div>
       </div>
 
@@ -206,7 +206,7 @@ export function BookingForm({ roomType, t, onBack }: Props) {
               <span className="text-charcoal-mid text-sm">
                 {nights} {nights === 1 ? t.night : t.nights}
               </span>
-              <span className="font-serif text-2xl font-bold text-terra">${total}</span>
+              <span className="font-serif text-2xl font-bold text-terra">{total.toLocaleString('ru-RU')} сум</span>
             </motion.div>
           )}
         </motion.div>

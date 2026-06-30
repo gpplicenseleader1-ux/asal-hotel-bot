@@ -28,7 +28,7 @@ def calculate_price(room_price: float, nights: int, discount_percent: int = 0) -
 
 
 def format_price(amount: float) -> str:
-    return f"${amount:.0f}"
+    return f"{int(amount):,} сум".replace(",", " ")
 
 
 def get_booking_id(booking_uuid: str) -> str:
