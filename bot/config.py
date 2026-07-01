@@ -30,8 +30,8 @@ MINI_APP_URL: str = os.getenv("MINI_APP_URL", "")
 
 HOTEL_NAME = "Asal Boutique Hotel"
 HOTEL_CITY = "Бухара, Узбекистан"
-HOTEL_PHONE = "+998 91 116 71 57"
-HOTEL_ADDRESS = "ул. Накшбанди 5, Бухара"
+HOTEL_PHONE = "+998 78 333 22 00"
+HOTEL_ADDRESS = "ул. Самарканд, 86, Бухара"
 HOTEL_INSTAGRAM = "@asal_boutique_hotel"
 
 ROOM_TYPES = {

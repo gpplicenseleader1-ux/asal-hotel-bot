@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 MAPS_URL = (
     "https://www.google.com/maps/search/?api=1"
-    "&query=5+Naqshbandi+St,+Bukhara,+Uzbekistan"
+    "&query=Samarkand+86,+Bukhara,+Uzbekistan"
 )
 
 ROOM_LABELS: dict[str, str] = {
@@ -65,7 +65,7 @@ def generate_booking_pdf(booking: dict[str, Any], room_number: str) -> bytes:
 
     pdf.set_font("Helvetica", "", 8)
     pdf.set_xy(0, 18)
-    pdf.cell(_PW, 5, "5 Naqshbandi St, Bukhara, Uzbekistan", align="C")
+    pdf.cell(_PW, 5, "Samarkand St 86, Bukhara, Uzbekistan", align="C")
 
     pdf.set_font("Helvetica", "", 7)
     pdf.set_xy(0, 24)
@@ -132,7 +132,9 @@ def generate_booking_pdf(booking: dict[str, Any], room_number: str) -> bytes:
     pdf.cell(40, 6, "TOTAL")
     pdf.set_font("Times", "B", 18)
     pdf.set_xy(_ML, y + 4)
-    pdf.cell(_CW - 5, 8, f"${booking.get('total_price', 0)}", align="R")
+    total_price_val = booking.get("total_price", 0)
+    total_price_fmt = f"{int(total_price_val):,} sum".replace(",", " ")
+    pdf.cell(_CW - 5, 8, total_price_fmt, align="R")
     y += 24
 
     # ── QR code
@@ -162,8 +164,8 @@ def generate_booking_pdf(booking: dict[str, Any], room_number: str) -> bytes:
     pdf.set_text_color(*_LABEL)
     pdf.set_font("Helvetica", "", 7)
     for i, line in enumerate([
-        "5 Naqshbandi St, Bukhara",
-        "+998 90 123 45 67",
+        "Samarkand St 86, Bukhara",
+        "+998 78 333 22 00",
         "@asal_boutique_hotel",
         "Check-in 14:00  |  Check-out 12:00",
     ]):

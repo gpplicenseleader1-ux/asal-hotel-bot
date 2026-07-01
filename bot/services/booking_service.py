@@ -104,6 +104,8 @@ async def create_booking(
         "source": source,
     }
     result = db.table("bookings").insert(booking).execute()
+    if not result.data:
+        raise RuntimeError(f"Supabase insert returned no data. Response: {result}")
     return result.data[0]
 
 
@@ -253,8 +255,8 @@ async def notify_booking_created(
     async def _send_client_msg() -> None:
         text = (
             "Спасибо за бронирование! С вами свяжутся представители отеля Asal. "
-            "Наши контакты: +998 91 116 71 57. "
-            "Локация: https://maps.google.com/?q=5+Naqshbandi+St,+Bukhara"
+            "Наши контакты: +998 78 333 22 00. "
+            "Локация: https://www.google.com/maps/search/?api=1&query=Samarkand+86,+Bukhara,+Uzbekistan"
         )
         await bot.send_message(user_telegram_id, text)
 

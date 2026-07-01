@@ -1,4 +1,4 @@
-{
+﻿{
   "welcome": "🌹 <b>Asal Boutique Hotel</b>ga xush kelibsiz!\n\nBiz Buxoroning markazida joylashganmiz.\n\nTilni tanlang / Choose language:",
   "select_lang": "Tilni tanlang:",
   "lang_set": "✅ Til o'rnatildi: O'zbekcha",
@@ -11,8 +11,8 @@
   "btn_contacts": "📞 Aloqa",
   "btn_open_app": "🏨 Ilovada xona tanlash",
   "btn_ai_chat": "🤖 AI-assistent",
-  "about_text": "🏨 <b>Asal Boutique Hotel</b>\n\n📍 Naqshbandi ko'chasi 5, Buxoro\n📞 +998 91 116 71 57\n📷 @asal_boutique_hotel\n\n🌟 Buxoroning tarixiy markazidagi 80 xonali butik-mehmonxona.\n\nMehmonxonamizda:\n• 3 turdagi xona (Standart, Deluxe, Lyuks)\n• O'zbek taomi restorani\n• Basseyn va SPA\n• Bepul Wi-Fi\n• Aeroport transferi\n• Buxoro bo'ylab ekskursiyalar",
-  "contacts_text": "📞 <b>Aloqa</b>\n\n📱 WhatsApp: +998 91 116 71 57\n📞 Telefon: +998 91 116 71 57\n📧 Email: info@asal-hotel.uz\n📷 Instagram: @asal_boutique_hotel\n🌐 Sayt: www.asal-hotel.uz\n\n⏰ Qabul 24/7 ishlaydi",
+  "about_text": "🏨 <b>Asal Boutique Hotel</b>\n\n📍 Samarkand ko'chasi 86, Buxoro\n📞 +998 78 333 22 00\n📷 @asal_boutique_hotel\n\n🌟 Buxoroning tarixiy markazidagi 80 xonali butik-mehmonxona.\n\nMehmonxonamizda:\n• 3 turdagi xona (Standart, Deluxe, Lyuks)\n• O'zbek taomi restorani\n• Basseyn va SPA\n• Bepul Wi-Fi\n• Aeroport transferi\n• Buxoro bo'ylab ekskursiyalar",
+  "contacts_text": "📞 <b>Aloqa</b>\n\n📱 WhatsApp: +998 78 333 22 00\n📞 Telefon: +998 78 333 22 00\n📧 Email: info@asal-hotel.uz\n📷 Instagram: @asal_boutique_hotel\n🌐 Sayt: www.asal-hotel.uz\n\n⏰ Qabul 24/7 ishlaydi",
   "promotions_text": "🎁 <b>Joriy aksiyalar</b>\n\n🌟 <b>Erta bron qilish</b>\n30+ kun oldin band qiling — 10% chegirma\n\n🌙 <b>Uzoq muddatli turar joy</b>\n7+ tundan — 15% chegirma\n\n👨‍👩‍👧 <b>Oilaviy paket</b>\n6 yoshgacha bolalar — bepul\n\n💎 <b>Asal Friends sodiqlik dasturi</b>\nTunlarni to'plang va 10% gacha chegirma oling",
   "book_select_type": "🛎 <b>Xona turini tanlash</b>\n\nXona turini tanlang:",
   "book_select_checkin": "📅 <b>Kelish sanasi</b>\n\nKelish sanasini tanlang:",

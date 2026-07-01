@@ -4,7 +4,7 @@ import type { Translations } from '../i18n'
 import type { BookingSuccessData, RoomType } from '../types'
 
 const MAPS_URL =
-  'https://www.google.com/maps/search/?api=1&query=5+Naqshbandi+St,+Bukhara,+Uzbekistan'
+  'https://www.google.com/maps/search/?api=1&query=Samarkand+86,+Bukhara,+Uzbekistan'
 
 type RGB = [number, number, number]
 const TERRA:    RGB = [197, 107,  74]
@@ -71,7 +71,7 @@ export async function downloadBookingPdf(
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8.5)
-  doc.text('5 Naqshbandi St, Bukhara, Uzbekistan', PW / 2, 22, { align: 'center' })
+  doc.text('Samarkand St 86, Bukhara, Uzbekistan', PW / 2, 22, { align: 'center' })
 
   doc.setFontSize(7.5)
   doc.text('BOOKING RECEIPT', PW / 2, 30, { align: 'center' })
@@ -123,7 +123,7 @@ export async function downloadBookingPdf(
 
   doc.setFont('times', 'bold')
   doc.setFontSize(18)
-  doc.text(`$${data.totalPrice}`, PW - MR - 5, y + 10.5, { align: 'right' })
+  doc.text(`${data.totalPrice.toLocaleString('ru-RU')} sum`, PW - MR - 5, y + 10.5, { align: 'right' })
 
   y += 24
 
@@ -146,8 +146,8 @@ export async function downloadBookingPdf(
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7.5)
   doc.setTextColor(...LABEL)
-  doc.text('5 Naqshbandi St, Bukhara', ML, y + 13)
-  doc.text('+998 90 123 45 67', ML, y + 20)
+  doc.text('Samarkand St 86, Bukhara', ML, y + 13)
+  doc.text('+998 78 333 22 00', ML, y + 20)
   doc.text('@asal_boutique_hotel', ML, y + 27)
   doc.text('Check-in from 14:00  |  Check-out by 12:00', ML, y + 34)
 
