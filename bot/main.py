@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -15,7 +16,26 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def _validate_env() -> None:
+    errors = []
+    if not config.BOT_TOKEN:
+        errors.append("BOT_TOKEN is missing")
+    if not config.SUPABASE_URL:
+        errors.append("SUPABASE_URL is missing")
+    elif not (config.SUPABASE_URL.startswith("https://") and ".supabase.co" in config.SUPABASE_URL):
+        errors.append(f"SUPABASE_URL looks malformed: {config.SUPABASE_URL!r}")
+    if not config.SUPABASE_SERVICE_KEY:
+        errors.append("SUPABASE_SERVICE_KEY is missing")
+    if not config.SUPABASE_ANON_KEY:
+        errors.append("SUPABASE_ANON_KEY is missing")
+    if errors:
+        for e in errors:
+            logger.critical("FATAL env error: %s", e)
+        sys.exit(1)
+
+
 async def main() -> None:
+    _validate_env()
     bot = Bot(token=config.BOT_TOKEN)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
