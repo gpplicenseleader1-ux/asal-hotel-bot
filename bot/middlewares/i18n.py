@@ -12,7 +12,7 @@ def _load_locales() -> None:
     locales_dir = os.path.join(os.path.dirname(__file__), "..", "locales")
     for lang in ("ru", "uz", "en"):
         path = os.path.join(locales_dir, f"{lang}.json")
-        with open(path, encoding="utf-8") as f:
+        with open(path, encoding="utf-8-sig") as f:
             _translations[lang] = json.load(f)
 
 
