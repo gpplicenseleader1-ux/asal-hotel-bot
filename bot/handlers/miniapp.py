@@ -15,6 +15,7 @@ router = Router()
 
 @router.message(F.web_app_data)
 async def handle_web_app_booking(message: Message, lang: str = "ru") -> None:
+    logger.info("[miniapp] web_app_data received from user %s", message.from_user.id)
     try:
         payload = json.loads(message.web_app_data.data)
     except (json.JSONDecodeError, AttributeError, TypeError):
@@ -44,12 +45,15 @@ async def handle_web_app_booking(message: Message, lang: str = "ru") -> None:
         return
 
     if room_type not in config.ROOM_TYPES:
+        logger.warning("[miniapp] unknown room_type=%r (allowed: %s)", room_type, list(config.ROOM_TYPES))
         await message.answer(t("error_generic", lang))
         return
     if payment_method not in config.PAYMENT_METHODS:
+        logger.warning("[miniapp] unknown payment_method=%r (allowed: %s)", payment_method, list(config.PAYMENT_METHODS))
         await message.answer(t("error_generic", lang))
         return
     if (check_out - check_in).days < 1:
+        logger.warning("[miniapp] invalid date range: check_in=%s check_out=%s", check_in, check_out)
         await message.answer(t("error_generic", lang))
         return
 
