@@ -168,13 +168,18 @@ async def _proceed_to_payment(message: Message, state: FSMContext, lang: str, ph
     try:
         await state.update_data(guest_phone=phone)
         await state.set_state(BookingFSM.select_payment)
-        # Dismiss the phone-share ReplyKeyboard, then add the inline payment buttons
-        payment_msg = await message.answer(
-            t("book_select_payment", lang),
+        # A message can carry either a ReplyKeyboardRemove or an InlineKeyboardMarkup,
+        # never both - so dismiss the phone-share ReplyKeyboard with a throwaway
+        # message first, then send the actual prompt with the inline payment buttons.
+        await message.answer(
+            "⁣",
             reply_markup=ReplyKeyboardRemove(),
+        )
+        await message.answer(
+            t("book_select_payment", lang),
+            reply_markup=payment_keyboard(lang),
             parse_mode="HTML",
         )
-        await payment_msg.edit_reply_markup(reply_markup=payment_keyboard(lang))
     except Exception as e:
         logger.error(f"Payment transition failed: {e}", exc_info=True)
         await message.answer(t("error_generic", lang), reply_markup=ReplyKeyboardRemove())
