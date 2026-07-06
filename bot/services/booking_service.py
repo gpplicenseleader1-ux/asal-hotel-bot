@@ -90,14 +90,12 @@ async def create_booking(
         "id": str(uuid.uuid4()),
         "user_telegram_id": user_telegram_id,
         "room_id": room_id,
-        "room_type": room_type,
         "check_in": check_in.isoformat(),
         "check_out": check_out.isoformat(),
         "nights": nights,
         "total_price": total_price,
         "guest_name": guest_name,
         "guest_phone": guest_phone,
-        "guests_count": guests_count,
         "payment_method": payment_method,
         "payment_status": "pending",
         "status": "confirmed",
@@ -106,7 +104,12 @@ async def create_booking(
     result = db.table("bookings").insert(booking).execute()
     if not result.data:
         raise RuntimeError(f"Supabase insert returned no data. Response: {result}")
-    return result.data[0]
+    # room_type/guests_count aren't columns on `bookings` (see supabase/migrations) -
+    # carry them on the returned dict so callers (Sheets/Calendar/notifications) still have them.
+    row = result.data[0]
+    row["room_type"] = room_type
+    row["guests_count"] = guests_count
+    return row
 
 
 async def update_room_status(room_id: str, status: str) -> None:
