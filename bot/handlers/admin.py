@@ -150,7 +150,9 @@ async def admin_cancel_booking(callback: CallbackQuery) -> None:
         await callback.answer("⛔ Доступ запрещён.", show_alert=True)
         return
     booking_id = callback.data.split(":", 2)[2]
-    await booking_service.update_booking_status(booking_id, "cancelled")
+    booking = await booking_service.update_booking_status(booking_id, "cancelled")
+    if booking and booking.get("room_id"):
+        await booking_service.update_room_status(booking["room_id"], "available")
     await sheets_service.update_booking_status_in_sheet(booking_id, "cancelled")
     await callback.message.edit_text(
         f"❌ Бронь <code>{get_booking_id(booking_id)}</code> отменена.",
