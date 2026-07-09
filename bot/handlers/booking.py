@@ -2,6 +2,7 @@ import logging
 from datetime import date
 
 from aiogram import Router, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
@@ -382,9 +383,13 @@ async def my_bookings(callback: CallbackQuery, lang: str = "ru") -> None:
             f"\n{t('booking_item', lang, id=get_booking_id(b['id']), room_type=room_name, check_in=format_date(check_in, lang), check_out=format_date(check_out, lang), total=format_price(b['total_price']), status=t(status_key, lang))}"
         )
 
-    await callback.message.edit_text(
-        "\n".join(lines),
-        reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
-        parse_mode="HTML",
-    )
+    try:
+        await callback.message.edit_text(
+            "\n".join(lines),
+            reply_markup=main_menu_keyboard(lang, config.MINI_APP_URL),
+            parse_mode="HTML",
+        )
+    except TelegramBadRequest as e:
+        if "message is not modified" not in str(e):
+            raise
     await callback.answer()
