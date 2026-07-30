@@ -40,6 +40,7 @@
   "ai_welcome": "🤖 <b>Asal Hotel AI Assistant</b>\n\nAsk any question about the hotel, prices, services or Bukhara attractions.\n\nType /start to exit",
   "ai_thinking": "🤔 Thinking...",
   "ai_error": "😔 Sorry, an error occurred. Please try again later.",
+  "ai_rate_limited": "🕐 You've asked too many questions in the last hour. Please try again later or call us: +998 78 333 22 00",
   "admin_menu": "⚙️ <b>Admin Panel</b>",
   "admin_today": "📋 Today's Bookings",
   "admin_week": "📅 Weekly Bookings",

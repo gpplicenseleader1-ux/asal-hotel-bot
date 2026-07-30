@@ -8,7 +8,7 @@ from aiogram.types import Message, CallbackQuery
 
 from keyboards.main_menu import back_to_menu_keyboard
 from middlewares.i18n import t
-from services.ai_service import ask_ai
+from services.ai_service import ask_ai, is_rate_limited
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -37,6 +37,10 @@ async def ai_start(callback: CallbackQuery, state: FSMContext, lang: str = "ru")
 async def ai_chat(message: Message, state: FSMContext, lang: str = "ru") -> None:
     user_text = message.text.strip()
     if user_text.startswith("/"):
+        return
+
+    if is_rate_limited(message.from_user.id):
+        await message.answer(t("ai_rate_limited", lang))
         return
 
     data = await state.get_data()

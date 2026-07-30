@@ -40,6 +40,7 @@
   "ai_welcome": "🤖 <b>Asal Hotel AI-assistent</b>\n\nMehmonxona, narxlar, xizmatlar yoki Buxoro diqqatga sazovor joylari haqida savol bering.\n\nChiqish uchun /start bosing",
   "ai_thinking": "🤔 O'ylamoqda...",
   "ai_error": "😔 Kechirasiz, xatolik yuz berdi. Keyinroq urinib ko'ring.",
+  "ai_rate_limited": "🕐 Siz oxirgi bir soatda juda ko'p savol berdingiz. Keyinroq urinib ko'ring yoki qo'ng'iroq qiling: +998 78 333 22 00",
   "admin_menu": "⚙️ <b>Administrator paneli</b>",
   "admin_today": "📋 Bugungi bronlar",
   "admin_week": "📅 Haftalik bronlar",

@@ -1,5 +1,6 @@
 import logging
 import json
+import time
 from datetime import date
 
 import anthropic
@@ -8,6 +9,22 @@ import config
 from services.booking_service import get_available_room
 
 logger = logging.getLogger(__name__)
+
+AI_RATE_LIMIT = 30
+_AI_WINDOW_SECONDS = 3600
+_ai_usage: dict[int, list[float]] = {}
+
+
+def is_rate_limited(user_id: int) -> bool:
+    """True if `user_id` already asked AI_RATE_LIMIT questions in the last hour."""
+    now = time.monotonic()
+    window_start = now - _AI_WINDOW_SECONDS
+    hits = [t for t in _ai_usage.get(user_id, []) if t > window_start]
+    limited = len(hits) >= AI_RATE_LIMIT
+    if not limited:
+        hits.append(now)
+    _ai_usage[user_id] = hits
+    return limited
 
 HOTEL_SYSTEM_PROMPT = """Ты — вежливый и профессиональный ИИ-ассистент отеля Asal Boutique Hotel (Бухара, Узбекистан).
 

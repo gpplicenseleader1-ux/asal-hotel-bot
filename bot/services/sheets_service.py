@@ -3,9 +3,9 @@ from datetime import datetime
 from typing import Any
 
 import gspread
-from google.oauth2.service_account import Credentials
 
 import config
+from services.google_auth import get_credentials
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ _gc: gspread.Client | None = None
 def _get_client() -> gspread.Client:
     global _gc
     if _gc is None:
-        creds = Credentials.from_service_account_file(config.GOOGLE_CREDENTIALS_PATH, scopes=SCOPES)
+        creds = get_credentials(SCOPES)
         _gc = gspread.authorize(creds)
     return _gc
 

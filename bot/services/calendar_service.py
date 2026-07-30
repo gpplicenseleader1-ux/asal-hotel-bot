@@ -1,10 +1,10 @@
 import logging
 from typing import Any
 
-from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 import config
+from services.google_auth import get_credentials
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ _service = None
 def _get_service():
     global _service
     if _service is None:
-        creds = Credentials.from_service_account_file(config.GOOGLE_CREDENTIALS_PATH, scopes=SCOPES)
+        creds = get_credentials(SCOPES)
         _service = build("calendar", "v3", credentials=creds)
     return _service
 

@@ -57,6 +57,10 @@ async def handle_web_app_booking(message: Message, lang: str = "ru") -> None:
         await message.answer(t("error_generic", lang))
         return
 
+    if booking_service.is_duplicate_submission(message.from_user.id, room_type, check_in, check_out):
+        logger.warning("[miniapp] duplicate submission ignored for user %s", message.from_user.id)
+        return
+
     try:
         room = await booking_service.get_available_room(room_type, check_in, check_out)
     except Exception as exc:

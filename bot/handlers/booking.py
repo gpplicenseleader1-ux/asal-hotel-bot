@@ -233,6 +233,10 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext, lang: str 
     check_out = date.fromisoformat(data["check_out"])
     room_type = data["room_type"]
 
+    if booking_service.is_duplicate_submission(callback.from_user.id, room_type, check_in, check_out):
+        logger.warning("Duplicate booking submission ignored for user %s", callback.from_user.id)
+        return
+
     try:
         room = await booking_service.get_available_room(room_type, check_in, check_out)
         if not room:

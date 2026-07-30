@@ -1,4 +1,5 @@
 import asyncio
+import time
 import uuid
 import logging
 from datetime import date
@@ -13,6 +14,23 @@ from services import sheets_service, calendar_service
 from utils.helpers import loyalty_tier_from_nights
 
 logger = logging.getLogger(__name__)
+
+_DEDUP_WINDOW_SECONDS = 90
+_recent_submissions: dict[str, float] = {}
+
+
+def is_duplicate_submission(telegram_id: int, room_type: str, check_in: date, check_out: date) -> bool:
+    """True if the identical (user, room_type, dates) combo was submitted in the
+    last 90s — guards against double-taps / double sendData firing two bookings."""
+    key = f"{telegram_id}:{room_type}:{check_in.isoformat()}:{check_out.isoformat()}"
+    now = time.monotonic()
+    last = _recent_submissions.get(key)
+    _recent_submissions[key] = now
+    if len(_recent_submissions) > 1000:
+        cutoff = now - _DEDUP_WINDOW_SECONDS
+        for k in [k for k, ts in _recent_submissions.items() if ts < cutoff]:
+            del _recent_submissions[k]
+    return last is not None and (now - last) < _DEDUP_WINDOW_SECONDS
 
 
 async def get_or_create_user(
@@ -120,6 +138,34 @@ async def update_room_status(room_id: str, status: str) -> None:
 async def update_booking_status(booking_id: str, status: str) -> dict[str, Any] | None:
     db = get_service_client()
     result = db.table("bookings").update({"status": status}).eq("id", booking_id).execute()
+    if result.data:
+        return result.data[0]
+    return None
+
+
+async def mark_checked_in(booking_id: str) -> dict[str, Any] | None:
+    db = get_service_client()
+    result = db.table("bookings").update({"checked_in": True}).eq("id", booking_id).execute()
+    if result.data:
+        return result.data[0]
+    return None
+
+
+async def update_booking_dates(
+    booking_id: str, check_in: date, check_out: date, nights: int, total_price: float
+) -> dict[str, Any] | None:
+    db = get_service_client()
+    result = (
+        db.table("bookings")
+        .update({
+            "check_in": check_in.isoformat(),
+            "check_out": check_out.isoformat(),
+            "nights": nights,
+            "total_price": total_price,
+        })
+        .eq("id", booking_id)
+        .execute()
+    )
     if result.data:
         return result.data[0]
     return None

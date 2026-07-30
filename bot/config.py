@@ -19,9 +19,16 @@ SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_ANON_KEY: str = os.getenv("SUPABASE_ANON_KEY", "")
 SUPABASE_SERVICE_KEY: str = os.getenv("SUPABASE_SERVICE_KEY", "")
 
-GOOGLE_SHEETS_ID: str = os.getenv("GOOGLE_SHEETS_ID", "1xe8_vR-iLg4T9RbemYLwZaHBJMWbf_AvyVWGnU0fHDg")
+GOOGLE_SHEETS_ID: str = os.getenv("GOOGLE_SHEETS_ID", "1wx3eVcxMnta_yPBrSznIVpLyBfTqU6eR6z-fBdgLau4")
 GOOGLE_CALENDAR_ID: str = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+
+# Preferred in prod: the full service-account JSON as one string (works on
+# Railway/Vercel with no persistent volume needed). GOOGLE_CREDENTIALS_PATH is
+# kept only as a local-dev fallback for a credentials.json file on disk.
+GOOGLE_SA_JSON: str = os.getenv("GOOGLE_SA_JSON", "")
 GOOGLE_CREDENTIALS_PATH: str = os.getenv("GOOGLE_CREDENTIALS_PATH", "credentials.json")
+
+SHEETS_SYNC_INTERVAL_SECONDS: int = int(os.getenv("SHEETS_SYNC_INTERVAL_SECONDS", "60"))
 
 ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL: str = "claude-sonnet-4-6"
