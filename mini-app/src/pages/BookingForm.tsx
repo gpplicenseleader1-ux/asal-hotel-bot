@@ -71,7 +71,7 @@ export function BookingForm({ roomType, t, onBack }: Props) {
   const [errors,   setErrors]   = useState<Record<string, string>>({})
 
   const [sending, setSending] = useState(false)
-  const { tg, user }         = useTelegram()
+  const { tg }                = useTelegram()
 
   const price  = ROOM_PRICE[roomType]
   const maxG   = MAX_GUESTS[roomType]
@@ -96,8 +96,6 @@ export function BookingForm({ roomType, t, onBack }: Props) {
     if (nights < 1) e.dates = t.minOneNight
     setErrors(e)
     if (Object.keys(e).length > 0) return
-
-    if (!user) { tg?.showAlert(t.error); return }
 
     setSending(true)
 
